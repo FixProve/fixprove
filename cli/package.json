@@ -1,0 +1,34 @@
+{
+  "name": "fixprove",
+  "version": "0.1.0",
+  "description": "FixProve CLI (open-core) - deterministic AST-level verification that AI-generated code references real, installed symbols.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "fixprove": "./dist/src/index.js"
+  },
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "dist/src"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test dist/test/*.test.js",
+    "lint": "echo 'lint: placeholder (Session 1.x adds eslint)'"
+  },
+  "dependencies": {
+    "commander": "^12.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "@types/node": "^20.16.11"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fixprove/fixprove.git",
+    "directory": "cli"
+  },
+  "homepage": "https://fixprove.dev"
+}

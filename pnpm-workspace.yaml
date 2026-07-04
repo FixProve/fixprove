@@ -1,0 +1,5 @@
+packages:
+  - "cli"
+  - "app"
+  - "web"
+  - "worker"

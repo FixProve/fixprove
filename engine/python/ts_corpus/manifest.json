@@ -1,0 +1,16 @@
+{
+  "clean/valid_axios_default.ts": [],
+  "clean/valid_named_and_type_only_import.ts": [],
+  "clean/valid_degraded_package_usage.ts": [],
+  "clean/valid_reexport_and_namespace.ts": [],
+  "clean/valid_relative_import_out_of_scope.ts": [],
+  "hallucinated/typo_method_on_axios.ts": [
+    {"line": 4, "reason": "unresolved-symbol"}
+  ],
+  "hallucinated/nonexistent_named_import.ts": [
+    {"line": 1, "reason": "unresolved-symbol"}
+  ],
+  "hallucinated/uninstalled_package.ts": [
+    {"line": 1, "reason": "dependency-not-installed"}
+  ]
+}

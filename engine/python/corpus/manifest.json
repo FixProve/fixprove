@@ -1,0 +1,16 @@
+{
+  "clean/valid_pandas_usage.py": [],
+  "clean/valid_requests_usage.py": [],
+  "clean/stdlib_usage.py": [],
+  "clean/local_variable_usage.py": [],
+  "clean/degraded_package_usage.py": [],
+  "hallucinated/typo_attribute.py": [
+    {"line": 3, "reason": "unresolved-symbol"}
+  ],
+  "hallucinated/bad_from_import.py": [
+    {"line": 1, "reason": "unresolved-symbol"}
+  ],
+  "hallucinated/uninstalled_dependency.py": [
+    {"line": 1, "reason": "dependency-not-installed"}
+  ]
+}

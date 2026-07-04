@@ -1,0 +1,10 @@
+[package]
+name = "fixprove"
+version = "0.0.1"
+edition = "2021"
+description = "Name reservation. Real crate coming soon."
+license = "MIT"
+repository = "https://github.com/FixProve/fixprove"
+homepage = "https://fixprove.dev"
+keywords = ["fixprove"]
+categories = []

@@ -1,0 +1,210 @@
+# #KS-TRACE: S3.1-RELEASE-WORKFLOW | requirement: "A GitHub Actions release
+# workflow is defined to automate publishing to PyPI and npm on tag
+# creation." Triggers on any tag matching v*.*.* (semver). Publishing is
+# GATED behind the existing test suites for both packages -- a red test
+# run must never reach a publish step.
+#
+# ASSUMPTION (AI-logged, pending Yehor override): uses PyPI's Trusted
+# Publishing (OIDC, `id-token: write`, no stored token) for the Python
+# package -- this requires Yehor to configure it ONCE on pypi.org (Project
+# -> Publishing -> Add a new publisher, pointing at this repo/workflow/
+# environment name) before the first real release. Chosen specifically
+# because Session 0.1's own Keystone Report flagged a HIGH-severity defect
+# (D4: a PyPI API token was pasted in plaintext in a chat session and had
+# to be revoked) -- Trusted Publishing eliminates that entire class of
+# risk by never having a long-lived PyPI token to leak in the first place.
+# npm publishing uses a classic NPM_TOKEN repo secret (npm's own OIDC
+# Trusted Publishers support is newer/less universally available than
+# PyPI's), combined with `--provenance` for supply-chain attestation.
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  # KS-TRACE: S3.1-RELEASE-TEST-GATE | requirement: publishing must never
+  # happen on the strength of an out-of-date or unverified build -- this
+  # job re-runs the FULL existing test suites (TS monorepo via turbo, and
+  # the Python engine via pytest) from a clean checkout of the tagged
+  # commit, exactly as CI does on every push, before either publish job is
+  # allowed to start (see `needs:` below).
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install TS/JS dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build all workspaces
+        run: pnpm build
+
+      - name: Typecheck all workspaces
+        run: pnpm typecheck
+
+      - name: Test all workspaces
+        run: pnpm test
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python engine test dependencies
+        working-directory: engine/python
+        run: pip install --break-system-packages -r requirements.txt
+
+      - name: Test Python engine
+        working-directory: engine/python
+        run: python -m pytest tests/ -q
+
+  # KS-TRACE: S3.1-RELEASE-ARTIFACT-ADVERSARIAL-GATE | requirement
+  # (adversarial acceptance criterion): "packaging must not accidentally
+  # include test files, fixtures, or internal corpora in the published
+  # artifacts." This is not a one-time manual check -- it is a REPEATED,
+  # AUTOMATED gate that runs on every single release, so a future change
+  # to pyproject.toml/MANIFEST.in/package.json can never silently
+  # reintroduce leakage without failing CI. Builds the REAL sdist+wheel
+  # and the REAL npm tarball, then greps their member listings for
+  # forbidden path fragments.
+  verify-artifact-contents:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build Python sdist + wheel
+        working-directory: engine/python
+        run: |
+          pip install --break-system-packages --quiet build
+          python -m build
+
+      - name: Verify Python artifacts exclude tests/corpora/eval scripts
+        working-directory: engine/python
+        run: |
+          set -e
+          SDIST=$(ls dist/*.tar.gz)
+          WHEEL=$(ls dist/*.whl)
+          echo "Inspecting $SDIST"
+          tar tzf "$SDIST" | tee /tmp/sdist-listing.txt
+          echo "Inspecting $WHEEL"
+          python -m zipfile -l "$WHEEL" | tee /tmp/wheel-listing.txt
+          for forbidden in "/tests/" "/corpus/" "/ts_corpus/" "eval_corpus.py" "eval_ts_corpus.py" ".pytest_cache" ".hypothesis" "__pycache__"; do
+            if grep -qF "$forbidden" /tmp/sdist-listing.txt; then
+              echo "::error::sdist contains forbidden path fragment: $forbidden"
+              exit 1
+            fi
+            if grep -qF "$forbidden" /tmp/wheel-listing.txt; then
+              echo "::error::wheel contains forbidden path fragment: $forbidden"
+              exit 1
+            fi
+          done
+          echo "OK: no test/fixture/corpus/eval leakage in Python artifacts."
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install + build cli/ for packing
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm --filter fixprove build
+
+      - name: Verify npm tarball excludes source/test files (only dist/ ships)
+        working-directory: cli
+        run: |
+          set -e
+          npm pack --dry-run --json > /tmp/npm-pack.json
+          cat /tmp/npm-pack.json
+          python3 - << 'PYEOF'
+          import json
+          data = json.load(open("/tmp/npm-pack.json"))
+          files = [f["path"] for f in data[0]["files"]]
+          forbidden_prefixes = ("src/", "test/", "dist/test/")
+          leaked = [f for f in files if f.startswith(forbidden_prefixes)]
+          if leaked:
+              print(f"::error::npm tarball contains forbidden source/test files: {leaked}")
+              raise SystemExit(1)
+          print("OK: npm tarball contains only", files)
+          PYEOF
+
+  # KS-TRACE: S3.1-RELEASE-PYPI | Trusted Publishing (OIDC) -- see the
+  # module-level trace above for why. `environment: pypi` matches the
+  # environment name Yehor must configure on pypi.org's Trusted Publisher
+  # setup (this is a one-time manual step, not automatable from here --
+  # see this session's Keystone Report Known Limitations).
+  publish-pypi:
+    needs: verify-artifact-contents
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build sdist + wheel
+        working-directory: engine/python
+        run: |
+          pip install --break-system-packages --quiet build
+          python -m build
+
+      - name: Publish to PyPI (Trusted Publishing, no token)
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: engine/python/dist
+
+  # KS-TRACE: S3.1-RELEASE-NPM | classic token-based publish + provenance
+  # attestation. NPM_TOKEN must be set as a repo secret (Settings ->
+  # Secrets and variables -> Actions) -- see Keystone Report Known
+  # Limitations for why this differs from the PyPI job's OIDC approach.
+  publish-npm:
+    needs: verify-artifact-contents
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install + build
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm --filter fixprove build
+
+      - name: Publish to npm
+        working-directory: cli
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

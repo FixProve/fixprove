@@ -1,0 +1,78 @@
+# FixProve check workflow — Session 2.1 distributable template
+# ==================================================================
+#
+# KS-TRACE: S2.1-ACTION-TEMPLATE | requirement: this is the workflow file a
+# customer adds to THEIR OWN repository (as
+# `.github/workflows/fixprove-check.yml`) after installing the FixProve
+# GitHub App. It is what actually checks out and scans the customer's code
+# on THEIR runner — the FixProve App's own backend never receives source
+# code, only the findings JSON this workflow POSTs back at the end.
+#
+# ASSUMPTION (AI-logged, pending Yehor override): `pip install fixprove` /
+# `npm install -g fixprove` are placeholders for the published open-core CLI
+# (Session 3.1 per the master build plan). Until published, this template's
+# install step must be swapped for a git-checkout-and-local-install of
+# engine/python directly; that substitution is called out explicitly below
+# rather than silently assumed to already work.
+
+name: FixProve Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  # KS-TRACE: S2.1-ACTION-OIDC-PERMISSION | requirement: id-token: write is
+  # what lets this workflow request a GitHub Actions OIDC token — the whole
+  # reason the FixProve App never needs a shared secret from this repo.
+  id-token: write
+
+jobs:
+  fixprove-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install FixProve engine
+        run: |
+          # TODO(Session 3.1): replace with `pip install fixprove` once the
+          # open-core CLI is published to PyPI. Until then this expects the
+          # customer (or our onboarding docs) to point PYTHONPATH at a
+          # checked-out copy of engine/python, or vendors it directly.
+          pip install --break-system-packages -r requirements.txt || true
+
+      - name: Run fixprove check
+        id: fixprove
+        run: |
+          python3 -m cli "${{ github.workspace }}" --json > fixprove-findings.json || true
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Request OIDC token
+        id: oidc
+        uses: actions/github-script@v7
+        with:
+          # KS-TRACE: S2.1-ACTION-AUDIENCE | the `audience` value here MUST
+          # match the `callbackAudience` the FixProve App was configured
+          # with, or verifyGithubActionsOidcToken will reject the token
+          # (see oidcVerify.ts) -- this is deliberate, not a bug: it scopes
+          # the token to ONLY be usable against FixProve's callback, not
+          # replayable against any other OIDC-verifying service.
+          script: |
+            const token = await core.getIDToken('https://fixprove.dev/callback');
+            core.setOutput('token', token);
+
+      - name: Report findings to FixProve
+        run: |
+          FINDINGS=$(cat fixprove-findings.json | python3 -c "import json,sys; print(json.dumps(json.load(sys.stdin).get('findings', [])))")
+          curl -sf -X POST "https://api.fixprove.dev/callback" \
+            -H "Content-Type: application/json" \
+            -d "{\"oidcToken\": \"${{ steps.oidc.outputs.token }}\", \"findings\": ${FINDINGS}}"

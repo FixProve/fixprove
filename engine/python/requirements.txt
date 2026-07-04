@@ -1,0 +1,12 @@
+# KS-TRACE: S3.1-REQUIREMENTS-DEFECT-FIX | tree-sitter-typescript was
+# missing from this file despite being a hard runtime dependency of
+# ts_symbol_extractor.py/ts_knowledge_base.py since Session 1.4 (see
+# pyproject.toml's S3.1-PYPROJECT-DEPS-DEFECT trace for the full story).
+# Added here so dev-environment installs (`pip install -r requirements.txt`)
+# and the published package's dependencies (pyproject.toml) never diverge
+# again -- both are pinned to the exact same versions.
+tree-sitter==0.26.0
+tree-sitter-python==0.25.0
+tree-sitter-typescript==0.23.2
+pytest==9.1.1
+hypothesis==6.156.1

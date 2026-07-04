@@ -1,0 +1,20 @@
+# #KS-TRACE: S3.1-MANIFEST | defense-in-depth alongside pyproject.toml's
+# explicit py-modules list: setuptools' sdist file-discovery defaults can
+# vary by version/config, so this file makes the exclusion of dev-only
+# content EXPLICIT rather than relying solely on py-modules not naming
+# them. Verified by actually building the sdist and inspecting its member
+# list in this session's Adversarial Verify (see Keystone Report §2) --
+# this file is a safeguard, not a substitute for that verification.
+include LICENSE
+include README.md
+include requirements.txt
+prune tests
+prune corpus
+prune ts_corpus
+exclude eval_corpus.py
+exclude eval_ts_corpus.py
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude .pytest_cache
+global-exclude .hypothesis
+global-exclude .DS_Store

@@ -1,0 +1,11 @@
+{
+  "name": "fixprove-ts-corpus",
+  "private": true,
+  "dependencies": {
+    "axios": "*",
+    "lodash": "*",
+    "@types/lodash": "*",
+    "fp-ts-clean-demo": "file:./local_fixtures/fp-ts-clean-demo",
+    "fp-ts-notypes-demo": "file:./local_fixtures/fp-ts-notypes-demo"
+  }
+}

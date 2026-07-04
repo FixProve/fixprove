@@ -1,0 +1,17 @@
+# #KS-TRACE: SESSION-0.3 | requirement: "a working email waitlist" backend |
+# assumption: this project is a "Worker with assets" (created via the
+# dashboard's static-upload flow, which only supports static files - see
+# Keystone Report). Dynamic /api/waitlist handling requires `wrangler deploy`
+# from a machine with normal network access (the build sandbox's egress proxy
+# blocks api.cloudflare.com). | test: live POST to /api/waitlist post-deploy.
+name = "fixprove"
+compatibility_date = "2024-09-23"
+main = "src/worker.ts"
+
+[assets]
+directory = "./out"
+binding = "ASSETS"
+
+[[kv_namespaces]]
+binding = "WAITLIST_KV"
+id = "9ca2bd2e2db245daa777b06cae14d75f"

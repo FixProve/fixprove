@@ -1,0 +1,27 @@
+{
+  "name": "@fixprove/web",
+  "version": "0.0.1",
+  "private": true,
+  "description": "FixProve landing page - static export + Worker (waitlist API) for Cloudflare (fixprove.dev).",
+  "license": "UNLICENSED",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.functions.json --noEmit && tsc -p tsconfig.worker.json",
+    "lint": "echo 'lint: placeholder (Session 0.3 adds eslint)'",
+    "test": "tsc -p tsconfig.functions.json && node --test functions-dist/test/*.test.js",
+    "deploy": "next build && wrangler deploy"
+  },
+  "dependencies": {
+    "next": "^14.2.15",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "@types/react": "^18.3.11",
+    "@types/node": "^20.16.11",
+    "@cloudflare/workers-types": "^4.20241004.0",
+    "wrangler": "^3.80.0"
+  }
+}

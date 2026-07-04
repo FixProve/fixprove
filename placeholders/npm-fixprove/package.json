@@ -1,0 +1,14 @@
+{
+  "name": "fixprove",
+  "version": "0.0.1",
+  "description": "Name reservation. Real package coming soon.",
+  "main": "index.js",
+  "keywords": ["fixprove"],
+  "author": "Yehor Kaliberda",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FixProve/fixprove"
+  },
+  "homepage": "https://fixprove.dev"
+}

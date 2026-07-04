@@ -1,0 +1,139 @@
+/* #KS-TRACE: SESSION-0.3 | requirement: "page live" (needs to look presentable,
+   not a bare acceptance criterion but table-stakes for a real landing page) |
+   assumption: no design system / Tailwind is wired up yet - plain CSS keeps the
+   scaffold dependency-light | test: visual check after `next build` + deploy */
+:root {
+  --bg: #0b0d10;
+  --fg: #e8eaed;
+  --muted: #9aa4ad;
+  --accent: #5eead4;
+  --danger: #f87171;
+  --card: #14171c;
+  --border: #262b33;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+}
+
+main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 72px 24px 96px;
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+h1 {
+  font-size: 40px;
+  line-height: 1.15;
+  margin: 0 0 20px;
+}
+
+.subhead {
+  font-size: 19px;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 0 0 40px;
+}
+
+.example {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 0 0 40px;
+  overflow-x: auto;
+}
+
+.example .fail {
+  color: var(--danger);
+}
+
+section h2 {
+  font-size: 22px;
+  margin: 48px 0 12px;
+}
+
+section p {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+form.waitlist {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+form.waitlist input[type="email"] {
+  flex: 1 1 260px;
+  padding: 13px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #0f1216;
+  color: var(--fg);
+  font-size: 15px;
+}
+
+form.waitlist input[type="email"]:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+form.waitlist button {
+  padding: 13px 22px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: #06231f;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+form.waitlist button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-message {
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+.form-message.success {
+  color: var(--accent);
+}
+
+.form-message.error {
+  color: var(--danger);
+}
+
+footer {
+  margin-top: 64px;
+  color: var(--muted);
+  font-size: 13px;
+}

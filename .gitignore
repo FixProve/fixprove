@@ -1,0 +1,35 @@
+node_modules/
+dist/
+.next/
+out/
+.turbo/
+*.log
+.env
+.env.local
+.DS_Store
+
+# Secrets -- never commit these. GitHub App private keys download as .pem;
+# this line exists specifically because Session 3.2's live deployment
+# runbook execution found one had landed inside this repo folder by
+# accident (browser default download location, not intentional).
+*.pem
+*.key
+.dev.vars
+
+# Python build artifacts (engine/python/)
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.hypothesis/
+build/
+*.egg-info/
+.fixprove_cache/
+
+# Rust build artifacts (placeholders/crates-fixprove/)
+target/
+
+# Business/financial documents -- not source, shouldn't be in version control
+invoices/
+
+# Leftover write-verify-move scratch artifacts
+*.check

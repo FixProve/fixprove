@@ -1,0 +1,18 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fixprove"
+version = "0.0.1"
+description = "Name reservation. Real package coming soon."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Yehor Kaliberda", email = "egorka30001@gmail.com" }]
+keywords = ["fixprove"]
+classifiers = ["Development Status :: 1 - Planning"]
+requires-python = ">=3.8"
+
+[project.urls]
+Homepage = "https://fixprove.dev"
+Repository = "https://github.com/FixProve/fixprove"

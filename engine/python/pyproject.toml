@@ -1,0 +1,105 @@
+# #KS-TRACE: S3.1-PYPROJECT | requirement: "Python engine is packaged cleanly
+# with pyproject.toml" | assumption: keeps the EXISTING flat module layout
+# (cli.py, resolver.py, finding.py, etc. at the package root, not nested
+# under a fixprove_engine/ package) rather than restructuring into a
+# namespaced package. This is a deliberate, logged tradeoff: this
+# environment's standing rule is that already-delivered files cannot be
+# renamed or deleted, and every existing module (plus all 179 passing
+# Session 1.1-1.4 tests) uses flat sibling imports (`from finding import
+# ...`) -- a namespace refactor would require moving files that cannot be
+# moved here. `py_modules` is used explicitly (not automatic package
+# discovery) specifically so eval_corpus.py/eval_ts_corpus.py (internal
+# eval scripts, not needed by an end user) and tests/, corpus/, ts_corpus/
+# (dev-only) are NEVER swept into the distribution by accident -- this is
+# the primary mechanism satisfying "must not accidentally include test
+# files, fixtures, or internal corpora in the published artifacts."
+# KNOWN LIMITATION (logged, not hidden): shipping top-level modules named
+# `cli`, `finding`, `resolver`, etc. under a package literally named
+# `fixprove` pollutes the installed environment's global module namespace
+# -- see this session's Keystone Report Known Limitations for the
+# recommended future fix (a proper `fixprove_engine/` package, achievable
+# once file-move/rename is possible).
+# | test: this session's build+inspect verification (see Keystone Report §2)
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fixprove"
+version = "0.1.0"
+description = "FixProve — deterministic AST-level verification that AI-generated code references real, installed symbols. Zero LLM tokens."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.9"
+authors = [{ name = "Yehor Kaliberda" }]
+keywords = ["ai", "hallucination", "static-analysis", "ci", "linter"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Quality Assurance",
+]
+
+# KS-TRACE: S3.1-PYPROJECT-DEPS-DEFECT | fix (found while writing this file,
+# before any build was attempted): requirements.txt only listed
+# tree-sitter/tree-sitter-python/pytest/hypothesis. `tree_sitter_typescript`
+# is imported directly by ts_symbol_extractor.py and ts_knowledge_base.py
+# (both shipped, both required for `fixprove check` to handle .ts/.tsx/.js/
+# .jsx files at all) and was NEVER added to requirements.txt, despite
+# Session 1.4's own Keystone Report explicitly running `pip-audit` against
+# `tree-sitter-typescript==0.23.2` as an already-installed dependency. Left
+# uncaught, `pip install fixprove` would succeed and then crash with
+# ModuleNotFoundError on the very first TS/JS file scanned -- exactly the
+# kind of gap adversarial packaging verification exists to catch. Fixed by
+# adding it here (pinned to the same version Session 1.4 audited) AND to
+# requirements.txt (see that file's own updated header) so dev and
+# published dependency lists no longer diverge.
+dependencies = [
+  "tree-sitter==0.26.0",
+  "tree-sitter-python==0.25.0",
+  "tree-sitter-typescript==0.23.2",
+]
+
+[project.urls]
+Homepage = "https://fixprove.dev"
+"GitHub App (paid, private-repo CI)" = "https://fixprove.dev/app"
+Repository = "https://github.com/fixprove/fixprove"
+
+# KS-TRACE: S3.1-CONSOLE-SCRIPT | requirement: "TS CLI wrapper ... correctly
+# invokes the Python core" needs a stable, documented invocation surface.
+# The TS wrapper (cli/src/commands/check.ts) invokes this Python package
+# via `python3 -m cli <args>` (module invocation, NOT this console script)
+# specifically to sidestep a real binary-name collision: the npm package's
+# own bin is ALSO literally named `fixprove`, so if both `npm i -g fixprove`
+# and `pip install fixprove` are installed on the same machine, relying on
+# a PATH lookup for a command named `fixprove` from inside the Node
+# wrapper would be ambiguous (which one does PATH resolve to?). This
+# console_scripts entry is kept for Python-only users who install via pip
+# directly and never touch the npm wrapper at all (the master build plan's
+# own "pip install fixprove works standalone" requirement) | test:
+# test_console_script_entry_point_installs (verified via a real pip
+# install in this session's Adversarial Verify, see Keystone Report §2)
+[project.scripts]
+fixprove = "cli:main"
+
+# KS-TRACE: S3.1-PY-MODULES | explicit, non-discovered module list --
+# ONLY these ship. Deliberately excludes eval_corpus.py/eval_ts_corpus.py
+# (internal eval scripts) and everything under tests/, corpus/, ts_corpus/.
+[tool.setuptools]
+py-modules = [
+  "cli",
+  "finding",
+  "symbol_extractor",
+  "knowledge_base",
+  "resolver",
+  "ts_symbol_extractor",
+  "ts_knowledge_base",
+  "ts_resolver",
+  "_kb_worker",
+]

@@ -1,0 +1,48 @@
+# #KS-TRACE: S2.2-WRANGLER-CONFIG | requirement: "deploys cleanly to
+# Cloudflare" | assumption: mirrors the existing web/wrangler.toml's own
+# working pattern (a plain Worker script, not Pages) rather than
+# introducing a second deployment convention into this repo. `main` points
+# at the Hono app's entry (src/index.ts); wrangler bundles TypeScript
+# itself, no separate tsc build step is required for deploy (tsc is still
+# run for typecheck/test, see package.json).
+#
+# ASSUMPTION (AI-logged, pending Yehor override): the KV namespace `id`
+# below is a PLACEHOLDER. A real namespace must be created via
+# `wrangler kv namespace create PENDING_CHECKS_KV` (requires live
+# Cloudflare account access this sandbox cannot reach -- see
+# feedback_cloudflare_sandbox_network.md) and this id replaced before a
+# real deploy. Secrets (GITHUB_APP_PRIVATE_KEY, GITHUB_WEBHOOK_SECRET) are
+# deliberately NOT in this file -- they must be set via
+# `wrangler secret put <NAME>`, never committed to source control.
+name = "fixprove-github-app"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# KS-TRACE: S3.2-RUNBOOK-A2-DEFECT | fix (found by the FIRST real
+# `wrangler deploy` attempt against this exact config -- wrangler rejected
+# it outright: "Wildcard operators (*) are not allowed in Custom Domains /
+# Paths are not allowed in Custom Domains"). A Cloudflare Custom Domain is
+# a bare hostname only -- no wildcard, no path -- and implicitly covers
+# every path under that hostname for this Worker (that's the whole point
+# of a Custom Domain vs. a zone-based Route, which DOES use wildcards but
+# doesn't get the "one hostname, one Worker" simplicity). Corrected to a
+# bare hostname pattern.
+routes = [
+  { pattern = "api.fixprove.dev", custom_domain = true }
+]
+
+[[kv_namespaces]]
+binding = "PENDING_CHECKS_KV"
+id = "e1ebb96855394533958a666869e62306"
+
+[vars]
+CALLBACK_AUDIENCE = "https://fixprove.dev/callback"
+
+# GITHUB_APP_ID is not secret (it's public on the App's GitHub settings
+# page) but is still environment-specific; set via `wrangler secret put
+# GITHUB_APP_ID` alongside the two below for consistency, or add a [vars]
+# entry here once the real App is registered:
+#   GITHUB_APP_PRIVATE_KEY  -> wrangler secret put GITHUB_APP_PRIVATE_KEY
+#   GITHUB_WEBHOOK_SECRET   -> wrangler secret put GITHUB_WEBHOOK_SECRET
+#   GITHUB_APP_ID           -> wrangler secret put GITHUB_APP_ID
