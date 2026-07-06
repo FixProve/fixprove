@@ -81,7 +81,25 @@ dependencies = [
 # live PyPI upload, not local build/inspect checks.
 [project.urls]
 Homepage = "https://fixprove.dev"
-"GitHub App (paid + private-repo CI)" = "https://fixprove.dev/app"
+#
+# #KS-TRACE: S4.2-DEFECT-PYPI-URL-LABEL-LENGTH | requirement: fix v0.1.3's
+# real PyPI upload failure -- "400 Bad Request: 'GitHub App (paid + private-
+# repo CI)' must be 32 characters or less." Root cause: PyPI's core-metadata
+# spec caps Project-URL LABELS at 32 characters; the comma-fixed label
+# ("GitHub App (paid + private-repo CI)", 35 chars) was never checked
+# against this limit because no prior local build/twine-check step
+# validates label length -- only PyPI's live upload endpoint enforces it.
+# This is the THIRD distinct real-infrastructure-only defect surfaced in
+# this session's publish-pypi job (Trusted Publisher config, then comma
+# delimiter, now length), each discovered only because the previous fix let
+# the pipeline progress one step further. Fixed (Yehor approved, Session
+# 4.2) by shortening the label to "GitHub App (paid CI)" (20 chars). |
+# assumption: shortened label still conveys "paid, used for CI" without
+# the "private-repo" qualifier -- acceptable since that nuance lives in the
+# KS-TRACE comment above and the README, not the PyPI label itself | test:
+# real GitHub Actions run (v0.1.4 tag) -- this class of defect can only be
+# caught by a live PyPI upload, not local build/inspect checks.
+"GitHub App (paid CI)" = "https://fixprove.dev/app"
 Repository = "https://github.com/fixprove/fixprove"
 
 # KS-TRACE: S3.1-CONSOLE-SCRIPT | requirement: "TS CLI wrapper ... correctly
