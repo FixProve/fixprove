@@ -249,8 +249,26 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm --filter fixprove build
 
+      # #KS-TRACE: S4.2-DEFECT-NPM-PROVENANCE | requirement: fix v0.1.2's real
+      # npm publish failure -- "npm error code E422 ... Unsupported GitHub
+      # Actions source repository visibility: 'private'. Only public source
+      # repositories are supported when publishing with provenance." npm's
+      # --provenance flag categorically requires the SOURCE repo to be
+      # public; FixProve/fixprove is deliberately private until the
+      # project's own D2 public-launch step (see Session 4.1's log --
+      # flipping to public is a deliberate, separate decision, not a side
+      # effect of CI plumbing). DECISION (Yehor, Session 4.2, explicit):
+      # drop --provenance now so the CLI can actually publish and unblock
+      # live end-to-end testing of the GitHub Action template on private
+      # test repos -- restoring it is deferred to immediately before the D2
+      # public flip, not indefinitely. | assumption: this is a temporary,
+      # explicitly-approved tradeoff (no supply-chain attestation during
+      # the private-beta window), not a permanent removal -- flagged again
+      # in the Known Limitations of this session's Keystone Report so it
+      # isn't silently forgotten before D2 | test: real GitHub Actions run
+      # (v0.1.3 tag)
       - name: Publish to npm
         working-directory: cli
-        run: npm publish --provenance --access public
+        run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
