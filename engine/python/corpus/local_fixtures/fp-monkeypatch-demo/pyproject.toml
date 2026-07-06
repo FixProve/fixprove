@@ -1,0 +1,33 @@
+# #KS-TRACE: S4.2-CORPUS-FIXTURE-INSTALLABILITY | requirement: the labelled
+# corpus's "degraded_package_usage.py" clean-case (see corpus/manifest.json)
+# depends on a REAL, pip-installed package named "fp-monkeypatch-demo"
+# (pinned in corpus/requirements.txt) that hard-exits at import time --
+# proving FixProve's locked Stage-1 decision ("a package whose introspection
+# degraded/crashed is never flagged") holds through the full pipeline, not
+# just in KB-builder unit tests (see KS-REPORT-1.3-resolver-cli.md Section 2,
+# "Degraded-KB false-positive protection").
+#
+# ROOT CAUSE (Session 4.2, fixing the v0.1.0 release-gate failure): this
+# fixture package existed only as an ad hoc, undocumented local pip install
+# in whatever environment validated Sessions 1.1-1.4 -- it was never
+# captured as a buildable, reproducible source anywhere in the repo. On a
+# genuinely clean CI runner (no prior manual pip install), the KB builder
+# correctly reports "not-installed" instead of "crashed", which is a
+# DIFFERENT (flaggable) status -- turning this clean-corpus file into a
+# false positive. This directory is the fix: a real, tiny, buildable local
+# package (mirrors the already-working ts_corpus/local_fixtures/ pattern
+# for the TS/JS side), installed explicitly in CI before the test suite runs
+# (see .github/workflows/release.yml and corpus/NOTES.md).
+#
+# This package is NEVER published to PyPI. It exists only to be pip-
+# installed from this local path in dev/CI environments that run the
+# Python engine's own test suite.
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fp-monkeypatch-demo"
+version = "0.1.0"
+description = "Local-only test fixture: hard-exits at import time (os._exit). Never published to PyPI."
+requires-python = ">=3.9"

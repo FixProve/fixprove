@@ -132,6 +132,75 @@ def test_resolve_import_name_via_packages_distributions_real_env():
 
 
 # ---------------------------------------------------------------------------
+# S4.2-DEFECT-YAML-BRIDGE regression tests: static known-mismatch fallback,
+# used only when the distribution is NOT actually installed (so the dynamic
+# packages_distributions()-derived reverse_map has no candidates at all).
+# See knowledge_base.py's own KS-TRACE on _KNOWN_DIST_TO_IMPORT_NAME_MISMATCHES
+# for the full root-cause narrative (v0.1.0 release-gate failure, 2026-07-04).
+# ---------------------------------------------------------------------------
+
+def test_resolve_import_name_static_fallback_used_when_not_installed():
+    # "pyyaml" is NOT installed in this environment (empty reverse_map entry,
+    # exactly as packages_distributions() would report for an uninstalled
+    # package) -- must still resolve to "yaml", not the naive normalized
+    # guess "pyyaml", so a not-installed PyYAML dependency correctly matches
+    # `import yaml` in code instead of silently never being checked.
+    assert _resolve_import_name("pyyaml", {}) == "yaml"
+    assert _resolve_import_name("PyYAML", {}) == "yaml"
+
+
+def test_resolve_import_name_prefers_dynamic_map_over_static_fallback():
+    # If the package IS actually installed and packages_distributions() has
+    # real candidates, those must win over the static table -- the static
+    # table is strictly a last-resort fallback for the "nothing installed to
+    # ask" case, never allowed to override real, live environment data.
+    reverse_map = {"pyyaml": ["yaml", "_yaml_c"]}
+    assert _resolve_import_name("pyyaml", reverse_map) == "yaml"
+
+
+def test_resolve_import_name_unknown_uninstalled_package_still_normalizes():
+    # An uninstalled package with NO static-table entry falls back to the
+    # same best-effort normalized guess as before this fix -- the static
+    # table is additive, not a replacement for the existing fallback.
+    assert _resolve_import_name("Some-Totally-Unknown-Package", {}) == "some_totally_unknown_package"
+
+
+# ---------------------------------------------------------------------------
+# Property-based test (Keystone Stage 3 requirement) on _resolve_import_name
+# -- the critical logic this session's fix touches. For ANY distribution
+# name and ANY reverse_map shape (including one that happens to collide with
+# a static-table key), the function must never raise and must always return
+# a non-empty string.
+# ---------------------------------------------------------------------------
+
+from hypothesis import given, settings, strategies as st  # noqa: E402
+
+_dist_name_strategy = st.text(
+    alphabet=st.characters(whitelist_categories=("Ll", "Lu", "Nd"), whitelist_characters="-_."),
+    min_size=1, max_size=30,
+).filter(lambda s: s.strip("-_."))
+
+_reverse_map_strategy = st.dictionaries(
+    st.text(alphabet=st.characters(whitelist_categories=("Ll", "Nd"), whitelist_characters="-"), min_size=1, max_size=15),
+    st.lists(st.text(alphabet=st.characters(whitelist_categories=("Ll", "Nd", "Lu"), whitelist_characters="_"), min_size=1, max_size=15), min_size=1, max_size=4),
+    max_size=5,
+)
+
+
+@given(dist_name=_dist_name_strategy, reverse_map=_reverse_map_strategy)
+@settings(max_examples=200)
+def test_resolve_import_name_property_always_returns_nonempty_string(dist_name, reverse_map):
+    # KS-TRACE: S4.2-PROPERTY-TEST | requirement: for ANY distribution name
+    # and ANY reverse_map (real, empty, or colliding with the static
+    # fallback table), _resolve_import_name must terminate, never raise, and
+    # never return an empty/None import name -- a blank bridge key would
+    # silently defeat the entire check_source alias-matching pipeline.
+    result = _resolve_import_name(dist_name, reverse_map)
+    assert isinstance(result, str)
+    assert len(result) > 0
+
+
+# ---------------------------------------------------------------------------
 # End-to-end: real, currently-installed packages (matches the master plan's
 # own reality-check philosophy: verify against real dependencies, not mocks)
 # ---------------------------------------------------------------------------

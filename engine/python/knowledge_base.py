@@ -105,6 +105,54 @@ def _normalize_dist_name(name: str) -> str:
     return re.sub(r"[-_.]+", "-", name).lower()
 
 
+# KS-TRACE: S4.2-DEFECT-YAML-BRIDGE | requirement: fix
+# test_bridge_handles_distribution_import_name_mismatch failing at
+# release-gate time (v0.1.0 pipeline, 2026-07-04) | root cause: this
+# session's Session 1.2 docstring ("Assumptions" above) already logged
+# that packages_distributions()-based resolution "may be wrong for
+# packages whose import name differs unpredictably from their
+# distribution name ... when packages_distributions() doesn't know about
+# them" -- i.e. when the distribution is NOT actually installed in the
+# environment running the KB builder. That is exactly the "dependency-
+# not-installed" case this tool exists to detect, so the previous
+# behavior was worse than a test-only inconvenience: a customer whose
+# requirements.txt pins "PyYAML" (not installed) and whose code does
+# `import yaml` would silently never be checked at all, because the
+# fallback (`_normalize_dist_name("pyyaml").replace("-", "_")` ==
+# "pyyaml", not "yaml") never matches the alias actually bound in code --
+# a false NEGATIVE on the not-installed case for every well-known
+# name-mismatched package. Fixed with a small static table of known
+# distribution -> import-name mismatches, consulted only as a fallback
+# AFTER the dynamic (real, installed-package-derived) reverse_map has had
+# its chance -- so a real installed environment's own metadata always
+# wins, and this table only fills the gap when nothing is installed to
+# ask. Not exhaustive by design (adding entries is safe and additive,
+# never a behavior-breaking change) | assumption: this table only needs
+# to cover well-known cases; an unlisted mismatch for an actually-
+# uninstalled package still falls back to the previous best-effort
+# normalized guess, same as before this fix | test:
+# test_bridge_handles_distribution_import_name_mismatch,
+# test_resolve_import_name_static_fallback_used_when_not_installed,
+# test_resolve_import_name_prefers_dynamic_map_over_static_fallback,
+# test_resolve_import_name_property_always_returns_nonempty_string
+_KNOWN_DIST_TO_IMPORT_NAME_MISMATCHES: dict = {
+    "pyyaml": "yaml",
+    "beautifulsoup4": "bs4",
+    "pillow": "PIL",
+    "protobuf": "google.protobuf",
+    "python-dateutil": "dateutil",
+    "pyjwt": "jwt",
+    "opencv-python": "cv2",
+    "scikit-learn": "sklearn",
+    "msgpack-python": "msgpack",
+    "python-dotenv": "dotenv",
+    "pyzmq": "zmq",
+    "pycrypto": "Crypto",
+    "pycryptodome": "Crypto",
+    "attrs": "attr",
+}
+
+
 def parse_requirements(text: str) -> list[dict]:
     """Parse requirements.txt content into structured requirement entries.
 
@@ -170,7 +218,11 @@ def _resolve_import_name(dist_name: str, reverse_map: dict) -> str:
     fallback = normalized.replace("-", "_")
     candidates = reverse_map.get(normalized)
     if not candidates:
-        return fallback
+        # KS-TRACE: S4.2-DEFECT-YAML-BRIDGE | the dynamic map has nothing
+        # (package not actually installed) -- consult the static
+        # known-mismatch table before giving up on the normalized guess.
+        # See _KNOWN_DIST_TO_IMPORT_NAME_MISMATCHES's own KS-TRACE above.
+        return _KNOWN_DIST_TO_IMPORT_NAME_MISMATCHES.get(normalized, fallback)
     for c in candidates:
         if c == fallback or _normalize_dist_name(c) == normalized:
             return c

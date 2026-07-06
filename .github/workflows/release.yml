@@ -64,6 +64,36 @@ jobs:
         working-directory: engine/python
         run: pip install --break-system-packages -r requirements.txt
 
+      # #KS-TRACE: S4.2-DEFECT-CORPUS-FIXTURES | requirement: fix the
+      # v0.1.0 release-gate failure (2026-07-04) -- test_corpus_eval_reports_
+      # perfect_precision_recall and test_ts_corpus_eval_reports_perfect_
+      # precision_recall regressed to precision 0.143 / 8 false positives on
+      # a clean GitHub Actions runner. ROOT CAUSE (confirmed by reproducing
+      # both failures in a fresh sandbox venv/checkout with no prior
+      # .fixprove_cache or ts_corpus/node_modules): the corpus eval's own
+      # fixture dependencies (corpus/requirements.txt's pandas/requests/
+      # fp-monkeypatch-demo, and ts_corpus/package.json's axios/lodash) were
+      # NEVER installed by this workflow -- they only ever existed in
+      # whatever ad hoc local environment validated Sessions 1.1-1.4. This
+      # is a missing CI setup step, NOT resolver/KB logic drift. Fixed by
+      # explicitly installing them here, the same way `pnpm test`/`pytest`
+      # already assume their own real dependencies are present.
+      # | test: test_corpus_eval_reports_perfect_precision_recall,
+      #         test_ts_corpus_eval_reports_perfect_precision_recall
+      - name: Install Python corpus-eval fixtures (real deps + local hard-exit fixture)
+        working-directory: engine/python
+        run: |
+          set -e
+          pip install --break-system-packages pandas==2.3.3 requests==2.34.2
+          pip install --break-system-packages ./corpus/local_fixtures/fp-monkeypatch-demo
+          # fastapi-helpers-fake is deliberately NEVER installed -- it is the
+          # corpus's "dependency-not-installed" true-positive fixture (see
+          # corpus/manifest.json and corpus/hallucinated/uninstalled_dependency.py).
+
+      - name: Install TS/JS corpus-eval fixtures (real npm deps, not part of the pnpm workspace)
+        working-directory: engine/python/ts_corpus
+        run: npm ci
+
       - name: Test Python engine
         working-directory: engine/python
         run: python -m pytest tests/ -q
