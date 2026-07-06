@@ -186,7 +186,20 @@ jobs:
     needs: verify-artifact-contents
     runs-on: ubuntu-latest
     environment: pypi
+    # #KS-TRACE: S4.2-DEFECT-PUBLISH-PERMISSIONS | requirement: fix v0.1.1's
+    # publish-pypi/publish-npm failure -- both jobs' `permissions:` blocks
+    # listed ONLY `id-token: write`. In GitHub Actions, declaring a job-level
+    # `permissions:` block REPLACES the entire default permission set rather
+    # than adding to it, so `contents: read` (required by actions/checkout@v4)
+    # silently dropped to `none` -- checkout then fails with a misleading
+    # "repository not found" instead of a permissions error. This is a
+    # pre-existing defect from Session 3.1, invisible until v0.1.1's run
+    # because these jobs had never actually executed before (v0.1.0 died at
+    # the earlier `test` gate). Fixed by adding `contents: read` explicitly.
+    # | test: real GitHub Actions run (v0.1.2 tag) -- this class of defect
+    # cannot be caught by local pytest/build checks, only a live workflow run.
     permissions:
+      contents: read
       id-token: write
     steps:
       - uses: actions/checkout@v4
@@ -213,7 +226,10 @@ jobs:
   publish-npm:
     needs: verify-artifact-contents
     runs-on: ubuntu-latest
+    # #KS-TRACE: S4.2-DEFECT-PUBLISH-PERMISSIONS | see publish-pypi's own
+    # KS-TRACE above -- identical root cause and fix.
     permissions:
+      contents: read
       id-token: write
     steps:
       - uses: actions/checkout@v4
