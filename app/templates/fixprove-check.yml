@@ -54,6 +54,23 @@ permissions:
 # live test explicitly requires to pass clean. This is a genuinely new
 # defect, not a previously-known/flagged limitation -- added here, but
 # called out explicitly for review before Yehor pushes it live.
+#
+# KS-TRACE: S4.3-ACTION-PY-DEPS-DEFECT | requirement (Yehor sign-off
+# pending, same class as S4.3-ACTION-TS-DEPS-DEFECT above): reproduced in
+# a real sandbox (Session 4.3) that knowledge_base.py reports "not-
+# installed" for a correctly `name==version`-pinned dependency if that
+# package isn't ACTUALLY importable in the current interpreter -- and
+# resolver.py flags "not-installed" as `dependency-not-installed` for
+# EVERY symbol imported from it, exactly like the TS/JS case. Confirmed
+# directly against a real customer requirements.txt
+# (autonomous-core's own, at the time of this session: openai, langgraph,
+# networkx, tree-sitter, python-dotenv, autopep8 -- all UNPINNED as
+# shipped, which separately means zero findings are even possible until
+# pinned; but pinning alone, without also installing, produces a false
+# positive on totally valid `client = openai.OpenAI()` usage). This
+# workflow never installed the CUSTOMER's own requirements.txt -- only
+# `fixprove` itself. Fixed below with a symmetric "Install Python
+# dependencies" step.
 
 jobs:
   fixprove-check:
@@ -72,6 +89,16 @@ jobs:
       - name: Install FixProve engine
         run: |
           pip install --break-system-packages fixprove
+
+      - name: Install Python dependencies
+        # See the S4.3-ACTION-PY-DEPS-DEFECT trace above the `permissions`
+        # block for why this step exists at all: without it, EVERY pinned
+        # dependency in the customer's own requirements.txt reports
+        # "not-installed" and gets flagged as a false positive on
+        # perfectly valid code, not just on a seeded hallucination.
+        if: hashFiles('requirements.txt') != ''
+        run: |
+          pip install --break-system-packages -r requirements.txt
 
       - name: Set up Node
         # Only matters if this repo has a package.json (TS/JS ecosystem);
