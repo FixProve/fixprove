@@ -32,6 +32,28 @@ const VALID_REASONS = new Set([
   "unresolved-symbol",
 ]);
 
+// KS-TRACE: S4.3-CALLBACK-PR-REF-PARSE | fix (found live, Session 4.3 B5
+// round-trip test): GitHub's Actions OIDC token `sha` claim is the
+// ephemeral merge commit for pull_request-triggered runs, never the real
+// PR head sha the pending Check Run was created against and keyed by (see
+// pendingStore.ts's S4.3-PENDING-STORE-CORRELATION-DEFECT trace for the
+// full root cause). The token's `ref` claim, however, IS stable and
+// verifiable for this event family: `refs/pull/<number>/merge`. Extracting
+// the PR number from it gives a correlation key that actually matches what
+// the webhook handler stored, while still coming from the cryptographically
+// VERIFIED token (never from client-supplied body fields) -- preserving the
+// exact trust boundary S2.1-CALLBACK-REPO-TRUST established. Returns
+// undefined (not a throw) for any ref shape that isn't a pull_request merge
+// ref -- e.g. a `push` event's `refs/heads/main` -- since correlating those
+// is an explicitly out-of-scope future extension (Yehor sign-off, Session
+// 4.3: tagged `kind` key added to pendingStore.ts so `push` can be added
+// later without another storage migration, but not implemented now) | test:
+// test_pr_ref_extracts_number, test_non_pr_ref_returns_undefined
+function extractPullRequestNumberFromRef(ref: string): string | undefined {
+  const match = /^refs\/pull\/(\d+)\/merge$/.exec(ref);
+  return match?.[1];
+}
+
 /**
  * KS-TRACE: S2.1-CALLBACK-VALIDATE | requirement: a findings array that
  * isn't actually shaped like Finding[] is rejected outright -- this is the
@@ -64,13 +86,21 @@ export function validateFindings(value: unknown): Finding[] | null {
  * KS-TRACE: S2.1-CALLBACK-HANDLE | requirement: OIDC verification failure,
  * malformed findings, and "no matching pending check run" are each a
  * DISTINCT rejection (never silently ignored, never crashes) -- and the
- * sha/repository used to look up the pending check run come from the
+ * repository/PR used to look up the pending check run come from the
  * VERIFIED token, not from client-supplied body fields, so a caller cannot
  * point a valid token at a different repo's pending check by lying in the
  * request body | test: test_valid_callback_completes_check_run,
  * test_invalid_oidc_token_rejected, test_malformed_findings_rejected,
  * test_no_pending_check_run_rejected,
  * test_body_repository_field_ignored_in_favor_of_token_claim
+ *
+ * KS-TRACE: S4.3-CALLBACK-HANDLE-CORRELATION-UPDATE | the lookup key
+ * changed from the token's `sha` claim to a PR number parsed from its
+ * `ref` claim -- see extractPullRequestNumberFromRef's KS-TRACE and
+ * pendingStore.ts's S4.3-PENDING-STORE-CORRELATION-DEFECT trace for why.
+ * The trust property is unchanged: `ref`, like `sha`, is a verified token
+ * claim, never client-supplied input | test:
+ * test_pr_correlation_survives_sha_mismatch, test_non_pr_ref_rejected
  */
 export async function handleCallback(
   app: App,
@@ -112,9 +142,19 @@ export async function handleCallback(
     return { ok: false, status: 401, error: "OIDC token repository claim is malformed" };
   }
 
-  const pending = await store.get(owner, repo, claims.sha);
+  const prNumber = extractPullRequestNumberFromRef(claims.ref);
+  if (prNumber === undefined) {
+    // KS-TRACE: S4.3-CALLBACK-NON-PR-REF | a push-event (or any other
+    // non-pull_request) ref cannot be correlated today -- fail closed with
+    // the same 404 shape as "no pending check run" rather than guessing at
+    // a fallback lookup, since no fallback is implemented (see
+    // extractPullRequestNumberFromRef's KS-TRACE above).
+    return { ok: false, status: 404, error: "no pending check run for this repository/ref" };
+  }
+
+  const pending = await store.get(owner, repo, "pr", prNumber);
   if (!pending) {
-    return { ok: false, status: 404, error: "no pending check run for this repository/sha" };
+    return { ok: false, status: 404, error: "no pending check run for this repository/pull request" };
   }
 
   const octokit = await app.getInstallationOctokit(pending.installationId);
@@ -125,7 +165,7 @@ export async function handleCallback(
         { owner, repo, checkRunId: pending.checkRunId },
         findings
       );
-  await store.delete(owner, repo, claims.sha);
+  await store.delete(owner, repo, "pr", prNumber);
 
   return { ok: true, status: 200 };
 }

@@ -41,15 +41,20 @@ test("opened action creates a pending check run and stores it", async () => {
   const store = new InMemoryPendingCheckRunStore();
   const payload: PullRequestEventPayload = {
     action: "opened",
+    number: 3,
     repository: { owner: { login: "acme" }, name: "widgets" },
     pull_request: { head: { sha: "abc123" } },
     installation: { id: 99 },
   };
   await handlePullRequestEvent(octokit, store, payload);
-  const pending = await store.get("acme", "widgets", "abc123");
+  // KS-TRACE: S4.3-WEBHOOK-PR-NUMBER-TEST | lookup is now by (owner, repo,
+  // "pr", PR NUMBER) -- not by sha, per pendingStore.ts's
+  // S4.3-PENDING-STORE-CORRELATION-DEFECT fix.
+  const pending = await store.get("acme", "widgets", "pr", "3");
   assert.ok(pending);
   assert.equal(pending?.checkRunId, 555);
   assert.equal(pending?.installationId, 99);
+  assert.equal(pending?.headSha, "abc123");
 });
 
 test("synchronize action creates a pending check run", async () => {
@@ -57,12 +62,13 @@ test("synchronize action creates a pending check run", async () => {
   const store = new InMemoryPendingCheckRunStore();
   const payload: PullRequestEventPayload = {
     action: "synchronize",
+    number: 4,
     repository: { owner: { login: "acme" }, name: "widgets" },
     pull_request: { head: { sha: "def456" } },
     installation: { id: 99 },
   };
   await handlePullRequestEvent(octokit, store, payload);
-  assert.ok(await store.get("acme", "widgets", "def456"));
+  assert.ok(await store.get("acme", "widgets", "pr", "4"));
 });
 
 test("irrelevant action (e.g. 'labeled') is ignored: no check run created, no error", async () => {
@@ -70,13 +76,14 @@ test("irrelevant action (e.g. 'labeled') is ignored: no check run created, no er
   const store = new InMemoryPendingCheckRunStore();
   const payload: PullRequestEventPayload = {
     action: "labeled",
+    number: 5,
     repository: { owner: { login: "acme" }, name: "widgets" },
     pull_request: { head: { sha: "abc123" } },
     installation: { id: 99 },
   };
   await handlePullRequestEvent(octokit, store, payload);
   assert.equal(requestCalls.length, 0);
-  assert.equal(await store.get("acme", "widgets", "abc123"), undefined);
+  assert.equal(await store.get("acme", "widgets", "pr", "5"), undefined);
 });
 
 test("missing installation id is skipped, not thrown", async () => {
@@ -84,6 +91,7 @@ test("missing installation id is skipped, not thrown", async () => {
   const store = new InMemoryPendingCheckRunStore();
   const payload: PullRequestEventPayload = {
     action: "opened",
+    number: 6,
     repository: { owner: { login: "acme" }, name: "widgets" },
     pull_request: { head: { sha: "abc123" } },
   };
@@ -169,11 +177,12 @@ test("webhook layer treats a PR with (as far as it's concerned) no special-cased
   const store = new InMemoryPendingCheckRunStore();
   const payload: PullRequestEventPayload = {
     action: "opened",
+    number: 7,
     repository: { owner: { login: "acme" }, name: "empty-diff-repo" },
     pull_request: { head: { sha: "nodiff000" } },
     installation: { id: 99 },
   };
   await assert.doesNotReject(() => handlePullRequestEvent(octokit, store, payload));
   assert.equal(requestCalls.length, 1);
-  assert.ok(await store.get("acme", "empty-diff-repo", "nodiff000"));
+  assert.ok(await store.get("acme", "empty-diff-repo", "pr", "7"));
 });

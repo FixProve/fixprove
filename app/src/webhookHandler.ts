@@ -15,6 +15,15 @@ const RELEVANT_ACTIONS = new Set(["opened", "synchronize", "reopened"]);
 
 export interface PullRequestEventPayload {
   action: string;
+  /**
+   * KS-TRACE: S4.3-WEBHOOK-PR-NUMBER | requirement: the PR number is now
+   * the correlation key the later OIDC callback uses to find this pending
+   * entry (see pendingStore.ts's S4.3-PENDING-STORE-CORRELATION-DEFECT
+   * trace) -- it is stable and available on every pull_request webhook
+   * payload, unlike the head sha the callback's OIDC token cannot reliably
+   * reproduce.
+   */
+  number: number;
   repository: { owner: { login: string }; name: string };
   pull_request: { head: { sha: string } };
   installation?: { id: number };
@@ -41,6 +50,7 @@ export async function handlePullRequestEvent(
   const owner = payload.repository.owner.login;
   const repo = payload.repository.name;
   const headSha = payload.pull_request.head.sha;
+  const prNumber = payload.number;
   const installationId = payload.installation?.id;
   if (installationId === undefined) {
     // KS-TRACE: S2.1-WEBHOOK-NO-INSTALLATION | assumption: a pull_request
@@ -56,7 +66,9 @@ export async function handlePullRequestEvent(
   await store.put({
     owner,
     repo,
-    sha: headSha,
+    kind: "pr",
+    correlationId: String(prNumber),
+    headSha,
     checkRunId,
     installationId,
     createdAt: Date.now(),

@@ -145,6 +145,7 @@ test("an internal failure inside the pull_request listener (e.g. auth/KV) is cla
   const signer = new OctokitApp({ appId: 123456, privateKey: "x", webhooks: { secret: "test-secret" } });
   const payload = JSON.stringify({
     action: "opened",
+    number: 3,
     repository: { owner: { login: "acme" }, name: "widgets" },
     pull_request: { head: { sha: "abc123" } },
     installation: { id: 99 },
@@ -183,8 +184,13 @@ test("KV failure during the callback path (looking up a pending check run) retur
   const failingKv = createFailingFakeKv(new Set(["get"]));
   const { jwks, sign } = await createLocalTestJwks();
   const env = { ...testEnv(failingKv), __testJwks: jwks };
+  // KS-TRACE: S4.3-WORKER-TEST-CORRELATION-UPDATE | ref must be a
+  // pull_request merge ref now, or execution would reject at the
+  // ref-parsing guard (404) before ever reaching the KV get() this test
+  // exists to exercise -- see callbackHandler.ts's
+  // extractPullRequestNumberFromRef KS-TRACE.
   const token = await sign(
-    { repository: "acme/widgets", run_id: "1", sha: "deadbeef", ref: "refs/heads/main" },
+    { repository: "acme/widgets", run_id: "1", sha: "deadbeef", ref: "refs/pull/5/merge" },
     { audience: "https://fixprove.dev/callback" }
   );
 
@@ -208,7 +214,7 @@ test("sanity: with a WORKING KV and a valid token but no matching pending entry,
   const { jwks, sign } = await createLocalTestJwks();
   const env = { ...testEnv(kv.asKvNamespace()), __testJwks: jwks };
   const token = await sign(
-    { repository: "acme/widgets", run_id: "1", sha: "never-seen-sha", ref: "refs/heads/main" },
+    { repository: "acme/widgets", run_id: "1", sha: "never-seen-sha", ref: "refs/pull/6/merge" },
     { audience: "https://fixprove.dev/callback" }
   );
 

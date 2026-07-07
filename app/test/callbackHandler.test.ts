@@ -13,6 +13,18 @@
 // "logic-verified, not live-verified" boundary named for this session: a
 // real GitHub App + a real installation token exchange is explicit
 // out-of-scope, deferred to live E2E verification (see Keystone Report).
+//
+// KS-TRACE: S4.3-CALLBACK-TEST-CORRELATION-UPDATE | every token in this
+// file now uses a `ref: "refs/pull/<n>/merge"` claim (matching how a real
+// pull_request-triggered Actions run's OIDC token actually looks), and
+// every pending-store entry uses the new `kind: "pr", correlationId: "<n>"`
+// shape, per pendingStore.ts's S4.3-PENDING-STORE-CORRELATION-DEFECT fix.
+// Several tests deliberately set the token's `sha` claim to a value that
+// does NOT match the stored `headSha` -- this is not an oversight, it is
+// the whole point: it proves correlation happens via the verified `ref`'s
+// PR number, never via sha equality, which was the actual production
+// defect (a pull_request OIDC token's `sha` claim is the ephemeral merge
+// commit, never the real PR head sha).
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -69,11 +81,12 @@ test("valid callback with seeded findings completes the check run as a failure n
   const requestCalls: Array<{ route: string; params: unknown }> = [];
   stubInstallationOctokit(app, requestCalls);
   const store = new InMemoryPendingCheckRunStore();
-  await store.put({ owner: "acme", repo: "widgets", sha: "deadbeef", checkRunId: 42, installationId: 7, createdAt: 0 });
+  await store.put({ owner: "acme", repo: "widgets", kind: "pr", correlationId: "10", headSha: "deadbeef", checkRunId: 42, installationId: 7, createdAt: 0 });
 
   const { jwks, sign } = await createLocalTestJwks();
+  // deliberately mismatched vs. the stored headSha -- see file header KS-TRACE
   const token = await sign(
-    { repository: "acme/widgets", run_id: "1", sha: "deadbeef", ref: "refs/heads/main" },
+    { repository: "acme/widgets", run_id: "1", sha: "ephemeral-merge-commit-sha", ref: "refs/pull/10/merge" },
     { audience: AUD }
   );
 
@@ -91,7 +104,7 @@ test("valid callback with seeded findings completes the check run as a failure n
   assert.match(output.summary, /src\/a\.py:10/);
   assert.equal((updateCall!.params as any).conclusion, "failure");
   // pending entry consumed after completion
-  assert.equal(await store.get("acme", "widgets", "deadbeef"), undefined);
+  assert.equal(await store.get("acme", "widgets", "pr", "10"), undefined);
 });
 
 test("valid callback with EMPTY findings completes the check run as a clean success (not an error)", async () => {
@@ -99,11 +112,11 @@ test("valid callback with EMPTY findings completes the check run as a clean succ
   const requestCalls: Array<{ route: string; params: unknown }> = [];
   stubInstallationOctokit(app, requestCalls);
   const store = new InMemoryPendingCheckRunStore();
-  await store.put({ owner: "acme", repo: "empty-diff-repo", sha: "nodiff000", checkRunId: 1, installationId: 7, createdAt: 0 });
+  await store.put({ owner: "acme", repo: "empty-diff-repo", kind: "pr", correlationId: "11", headSha: "nodiff000", checkRunId: 1, installationId: 7, createdAt: 0 });
 
   const { jwks, sign } = await createLocalTestJwks();
   const token = await sign(
-    { repository: "acme/empty-diff-repo", run_id: "1", sha: "nodiff000", ref: "refs/heads/main" },
+    { repository: "acme/empty-diff-repo", run_id: "1", sha: "ephemeral-merge-commit-sha", ref: "refs/pull/11/merge" },
     { audience: AUD }
   );
 
@@ -118,7 +131,7 @@ test("invalid/forged OIDC token is rejected with 401, check run never touched", 
   const requestCalls: Array<{ route: string; params: unknown }> = [];
   stubInstallationOctokit(app, requestCalls);
   const store = new InMemoryPendingCheckRunStore();
-  await store.put({ owner: "acme", repo: "widgets", sha: "deadbeef", checkRunId: 42, installationId: 7, createdAt: 0 });
+  await store.put({ owner: "acme", repo: "widgets", kind: "pr", correlationId: "10", headSha: "deadbeef", checkRunId: 42, installationId: 7, createdAt: 0 });
 
   const result = await handleCallback(app, store, (await createLocalTestJwks()).jwks, AUD, {
     oidcToken: "not-a-real-token",
@@ -128,7 +141,7 @@ test("invalid/forged OIDC token is rejected with 401, check run never touched", 
   assert.equal(result.status, 401);
   assert.equal(requestCalls.length, 0);
   // pending entry untouched
-  assert.ok(await store.get("acme", "widgets", "deadbeef"));
+  assert.ok(await store.get("acme", "widgets", "pr", "10"));
 });
 
 test("malformed findings payload is rejected with 400 before OIDC is even checked", async () => {
@@ -137,21 +150,21 @@ test("malformed findings payload is rejected with 400 before OIDC is even checke
   stubInstallationOctokit(app, requestCalls);
   const store = new InMemoryPendingCheckRunStore();
   const { jwks, sign } = await createLocalTestJwks();
-  const token = await sign({ repository: "acme/widgets", run_id: "1", sha: "x", ref: "refs/heads/main" }, { audience: AUD });
+  const token = await sign({ repository: "acme/widgets", run_id: "1", sha: "x", ref: "refs/pull/12/merge" }, { audience: AUD });
 
   const result = await handleCallback(app, store, jwks, AUD, { oidcToken: token, findings: { not: "an array" } });
   assert.equal(result.ok, false);
   assert.equal(result.status, 400);
 });
 
-test("no pending check run for the token's repository/sha is rejected with 404, not silently accepted", async () => {
+test("no pending check run for the token's repository/pull request is rejected with 404, not silently accepted", async () => {
   const app = buildTestApp();
   const requestCalls: Array<{ route: string; params: unknown }> = [];
   stubInstallationOctokit(app, requestCalls);
   const store = new InMemoryPendingCheckRunStore(); // nothing stored
   const { jwks, sign } = await createLocalTestJwks();
   const token = await sign(
-    { repository: "acme/widgets", run_id: "1", sha: "never-seen-sha", ref: "refs/heads/main" },
+    { repository: "acme/widgets", run_id: "1", sha: "never-seen-sha", ref: "refs/pull/999/merge" },
     { audience: AUD }
   );
 
@@ -159,6 +172,35 @@ test("no pending check run for the token's repository/sha is rejected with 404, 
   assert.equal(result.ok, false);
   assert.equal(result.status, 404);
   assert.equal(requestCalls.length, 0);
+});
+
+// KS-TRACE: S4.3-CALLBACK-NON-PR-REF-TEST (adversarial) | this is a direct
+// regression test for the production defect this session fixed: a token
+// whose `ref` is NOT a pull_request merge ref (e.g. a push-triggered run's
+// `refs/heads/main`) must fail closed with 404, never silently match an
+// unrelated PR's pending entry and never throw an uncaught exception.
+// push-event correlation is an explicit future extension, not implemented
+// by this fix (see extractPullRequestNumberFromRef's KS-TRACE in
+// callbackHandler.ts).
+test("an OIDC token with a non-pull_request ref (e.g. a push-triggered run) is rejected, not silently matched against unrelated PR data", async () => {
+  const app = buildTestApp();
+  const requestCalls: Array<{ route: string; params: unknown }> = [];
+  stubInstallationOctokit(app, requestCalls);
+  const store = new InMemoryPendingCheckRunStore();
+  await store.put({ owner: "acme", repo: "widgets", kind: "pr", correlationId: "10", headSha: "deadbeef", checkRunId: 42, installationId: 7, createdAt: 0 });
+
+  const { jwks, sign } = await createLocalTestJwks();
+  const token = await sign(
+    { repository: "acme/widgets", run_id: "1", sha: "deadbeef", ref: "refs/heads/main" },
+    { audience: AUD }
+  );
+
+  const result = await handleCallback(app, store, jwks, AUD, { oidcToken: token, findings: [] });
+  assert.equal(result.ok, false);
+  assert.equal(result.status, 404);
+  assert.equal(requestCalls.length, 0);
+  // the unrelated PR's pending entry must remain completely untouched
+  assert.ok(await store.get("acme", "widgets", "pr", "10"));
 });
 
 // KS-TRACE: S2.1-CALLBACK-REPO-TRUST-TEST | adversarial: a caller cannot
@@ -170,21 +212,23 @@ test("body has no way to override which repo's check run is targeted -- lookup u
   const requestCalls: Array<{ route: string; params: unknown }> = [];
   stubInstallationOctokit(app, requestCalls);
   const store = new InMemoryPendingCheckRunStore();
-  await store.put({ owner: "victim", repo: "secret-repo", sha: "victimsha", checkRunId: 1, installationId: 7, createdAt: 0 });
+  await store.put({ owner: "victim", repo: "secret-repo", kind: "pr", correlationId: "7", headSha: "victimsha", checkRunId: 1, installationId: 7, createdAt: 0 });
 
   const { jwks, sign } = await createLocalTestJwks();
   // token is legitimately signed, but for a DIFFERENT repo than the victim's
+  // -- deliberately reuses the SAME pr number (7) to prove owner/repo, not
+  // just the PR number alone, is part of the correlation key
   const token = await sign(
-    { repository: "attacker/other-repo", run_id: "1", sha: "victimsha", ref: "refs/heads/main" },
+    { repository: "attacker/other-repo", run_id: "1", sha: "victimsha", ref: "refs/pull/7/merge" },
     { audience: AUD }
   );
 
   const result = await handleCallback(app, store, jwks, AUD, { oidcToken: token, findings: [] });
-  // attacker/other-repo + victimsha was never stored -> 404, victim's check run untouched
+  // attacker/other-repo pr 7 was never stored -> 404, victim's check run untouched
   assert.equal(result.ok, false);
   assert.equal(result.status, 404);
   assert.equal(requestCalls.length, 0);
-  assert.ok(await store.get("victim", "secret-repo", "victimsha"));
+  assert.ok(await store.get("victim", "secret-repo", "pr", "7"));
 });
 
 test("missing oidcToken field entirely is rejected with 401", async () => {

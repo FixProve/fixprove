@@ -12,7 +12,11 @@
 // constructor param (see app/src/index.ts's S2.2-STORE-INJECT trace)
 // | test: kvPendingStore.test.ts
 
-import type { PendingCheckRun, PendingCheckRunStore } from "@fixprove/github-app/dist/src/pendingStore.js";
+import type {
+  PendingCheckRun,
+  PendingCheckRunKind,
+  PendingCheckRunStore,
+} from "@fixprove/github-app/dist/src/pendingStore.js";
 
 // KS-TRACE: S2.2-KV-STORE-ERROR | requirement (adversarial acceptance
 // criterion): "KV read/write failures must be caught and handled
@@ -38,8 +42,13 @@ export class KVStoreError extends Error {
   }
 }
 
-function key(owner: string, repo: string, sha: string): string {
-  return `${owner.toLowerCase()}/${repo.toLowerCase()}@${sha}`;
+// KS-TRACE: S4.3-KV-STORE-CORRELATION-UPDATE | mirrors pendingStore.ts's
+// S4.3-PENDING-STORE-CORRELATION-DEFECT fix verbatim -- same key shape,
+// same reasoning, copied rather than re-derived so the two
+// PendingCheckRunStore implementations cannot silently drift (consistent
+// with this file's original design intent, see S2.2-KV-STORE-IMPL below).
+function key(owner: string, repo: string, kind: PendingCheckRunKind, correlationId: string): string {
+  return `${owner.toLowerCase()}/${repo.toLowerCase()}#${kind}:${correlationId}`;
 }
 
 /**
@@ -59,7 +68,7 @@ export class KVPendingCheckRunStore implements PendingCheckRunStore {
   constructor(private readonly kv: KVNamespace) {}
 
   async put(entry: PendingCheckRun): Promise<void> {
-    const k = key(entry.owner, entry.repo, entry.sha);
+    const k = key(entry.owner, entry.repo, entry.kind, entry.correlationId);
     try {
       await this.kv.put(k, JSON.stringify(entry));
     } catch (err) {
@@ -67,8 +76,8 @@ export class KVPendingCheckRunStore implements PendingCheckRunStore {
     }
   }
 
-  async get(owner: string, repo: string, sha: string): Promise<PendingCheckRun | undefined> {
-    const k = key(owner, repo, sha);
+  async get(owner: string, repo: string, kind: PendingCheckRunKind, correlationId: string): Promise<PendingCheckRun | undefined> {
+    const k = key(owner, repo, kind, correlationId);
     let raw: string | null;
     try {
       raw = await this.kv.get(k);
@@ -94,8 +103,8 @@ export class KVPendingCheckRunStore implements PendingCheckRunStore {
     }
   }
 
-  async delete(owner: string, repo: string, sha: string): Promise<void> {
-    const k = key(owner, repo, sha);
+  async delete(owner: string, repo: string, kind: PendingCheckRunKind, correlationId: string): Promise<void> {
+    const k = key(owner, repo, kind, correlationId);
     try {
       await this.kv.delete(k);
     } catch (err) {

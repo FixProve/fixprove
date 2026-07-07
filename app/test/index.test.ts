@@ -39,6 +39,6 @@ test("uses the caller-supplied store when provided, not the in-memory default", 
   };
   const fixprove = createFixProveApp({ ...BASE_CONFIG, store: customStore });
   assert.equal(fixprove.store, customStore);
-  await fixprove.store.get("acme", "widgets", "sha");
+  await fixprove.store.get("acme", "widgets", "pr", "3");
   assert.deepEqual(calls, ["get"]);
 });
