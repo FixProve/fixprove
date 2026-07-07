@@ -162,6 +162,20 @@ app.post("/callback", async (c) => {
   const findings = body && typeof body === "object" ? (body as Record<string, unknown>).findings : undefined;
 
   const result = await fixprove.handleCallback({ oidcToken, findings });
+  // KS-TRACE: S4.3-WORKER-CALLBACK-LOGGING | requirement (diagnostic, not a
+  // behavior change): handleCallback's rejections (401/400/404) are
+  // classified, expected results -- they return normally, they never throw
+  // -- so app.onError's new logging never sees them. Session 4.3's B5
+  // round-trip test failed at this exact endpoint (curl exit 22) with no
+  // corresponding onError log line, meaning it's one of these four
+  // classified rejections, not a crash. Logging the result here (only on
+  // failure) is the same "restore observability before diagnosing" move
+  // as the onError fix, applied to the other endpoint that can silently
+  // fail | test: manual verification via wrangler tail + a live PR run,
+  // see KS-REPORT-4.3 Addendum 2.
+  if (!result.ok) {
+    console.error("fixprove callback rejected:", result.status, result.error);
+  }
   return c.json({ ok: result.ok, error: result.error }, result.status as any);
 });
 
