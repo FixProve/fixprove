@@ -114,7 +114,21 @@ function findKvStoreError(err: unknown): KVStoreError | undefined {
   return undefined;
 }
 
+// KS-TRACE: S4.3-WORKER-ERROR-LOGGING-DEFECT | fix (found live, Session 4.3
+// B5 walkthrough): this boundary classified and formatted errors for the
+// CALLER (GitHub) correctly, but never logged the caught exception anywhere
+// -- so a real, reproducible 500 on the pull_request webhook path (PR #3,
+// autonomous-core) was completely undiagnosable via `wrangler tail`: two
+// separate redeliveries of the identical payload produced identical
+// {"ok":false,"error":"internal error"} responses with NO corresponding
+// log output beyond the one-line request summary, because nothing in this
+// handler ever called console.error. Fixed by logging the raw caught error
+// before classifying/responding, so `wrangler tail` (or the Cloudflare
+// dashboard's Logs tab) can actually surface the underlying exception and
+// stack trace on the next occurrence | test: manual verification via
+// `wrangler tail` + a redelivered webhook, see KS-REPORT-4.3 Addendum 2.
 app.onError((err, c) => {
+  console.error("fixprove worker error:", err);
   const kvError = findKvStoreError(err);
   return c.json(
     {
