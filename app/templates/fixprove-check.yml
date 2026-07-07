@@ -8,12 +8,22 @@
 # on THEIR runner — the FixProve App's own backend never receives source
 # code, only the findings JSON this workflow POSTs back at the end.
 #
-# ASSUMPTION (AI-logged, pending Yehor override): `pip install fixprove` /
-# `npm install -g fixprove` are placeholders for the published open-core CLI
-# (Session 3.1 per the master build plan). Until published, this template's
-# install step must be swapped for a git-checkout-and-local-install of
-# engine/python directly; that substitution is called out explicitly below
-# rather than silently assumed to already work.
+# KS-TRACE: S4.3-ACTION-REAL-INSTALL | requirement: closes the TODO Session
+# 2.1 originally logged here. `fixprove` is now published for real to PyPI
+# (confirmed live, Session 4.2) — this workflow installs it with a real
+# `pip install fixprove` and continues invoking the engine via
+# `python3 -m cli` (module invocation), exactly as it always did; the
+# "cli" module ships as part of the `fixprove` PyPI distribution (see
+# engine/python/pyproject.toml's `[tool.setuptools] py-modules` list, which
+# explicitly includes "cli"). No npm/Node install is needed for the ENGINE
+# itself: the npm `fixprove` package is a separate local-CLI convenience
+# wrapper (see cli/src/commands/check.ts) that itself just shells out to
+# `python3 -m cli` — this Action already invokes that same entry point
+# directly, so installing the npm package here would be redundant. Node IS
+# still needed below, but only to install the CUSTOMER's own JS/TS
+# dependencies (see the S4.3-ACTION-TS-DEPS-DEFECT trace below) | test:
+# manual cross-check against cli/src/commands/check.ts,
+# engine/python/cli.py, engine/python/pyproject.toml — see KS-REPORT-4.3.
 
 name: FixProve Check
 
@@ -27,6 +37,23 @@ permissions:
   # what lets this workflow request a GitHub Actions OIDC token — the whole
   # reason the FixProve App never needs a shared secret from this repo.
   id-token: write
+
+# KS-TRACE: S4.3-ACTION-TS-DEPS-DEFECT | requirement (Yehor sign-off
+# pending -- flagged, not silently assumed): reproduced in a real sandbox
+# (Session 4.3, see KS-REPORT-4.3) that ts_knowledge_base.py's
+# build_package_entry() reports "not-installed" for every package whose
+# folder is absent under node_modules/, and ts_resolver.py flags
+# "not-installed" as a `dependency-not-installed` finding for EVERY symbol
+# imported from it -- confirmed: a genuinely clean `import axios from
+# "axios"` with node_modules missing is flagged as a false positive; the
+# same file with `npm install` run first is clean. Since node_modules is
+# gitignored in virtually every real repo, omitting a JS/TS dependency
+# install step would false-positive-flag 100% of imports in any real TS/JS
+# project on every single PR -- including RUNBOOK-LIVE-DEPLOYMENT.md's own
+# B5 "adversarial: clean PR" case, which yehor.ai's half of this session's
+# live test explicitly requires to pass clean. This is a genuinely new
+# defect, not a previously-known/flagged limitation -- added here, but
+# called out explicitly for review before Yehor pushes it live.
 
 jobs:
   fixprove-check:
@@ -44,11 +71,34 @@ jobs:
 
       - name: Install FixProve engine
         run: |
-          # TODO(Session 3.1): replace with `pip install fixprove` once the
-          # open-core CLI is published to PyPI. Until then this expects the
-          # customer (or our onboarding docs) to point PYTHONPATH at a
-          # checked-out copy of engine/python, or vendors it directly.
-          pip install --break-system-packages -r requirements.txt || true
+          pip install --break-system-packages fixprove
+
+      - name: Set up Node
+        # Only matters if this repo has a package.json (TS/JS ecosystem);
+        # harmless no-op cost otherwise. Pinned explicitly rather than
+        # relying on the runner image's default Node version.
+        if: hashFiles('package.json') != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install JS/TS dependencies
+        # See the S4.3-ACTION-TS-DEPS-DEFECT trace above the `permissions`
+        # block for why this step exists at all.
+        if: hashFiles('package.json') != ''
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            corepack enable
+            corepack prepare pnpm@latest --activate
+            pnpm install --frozen-lockfile
+          elif [ -f yarn.lock ]; then
+            corepack enable
+            yarn install --frozen-lockfile
+          elif [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
 
       - name: Run fixprove check
         id: fixprove
