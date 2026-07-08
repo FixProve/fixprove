@@ -65,6 +65,13 @@ ADVERSARIAL CASES (locked, Session 1.4)
   * @types/lodash (real, installed): heavy module-augmentation usage
     triggers the "degraded" status above -- proven against a genuinely
     installed, real DefinitelyTyped package, not a synthetic stand-in.
+  * resend, @privy-io/react-auth (real, installed, Session 4.4): both
+    bundle their entire public API as `declare class/function X {...}`
+    followed by a single trailing `export { ..., X, ... };` list, rather
+    than inline `export`-prefixed declarations -- a common bundler
+    (tsup/rollup-plugin-dts) output shape not exercised by any package
+    available when Session 1.4 first wrote this KB builder. See
+    S4.4-KB-DEFECT-A trace in `_parse_export_statement` for the fix.
   * Type-only re-export chains (`export * from`, `export {x} from`)
     resolved transitively via a synthetic fixture package
     (fp-ts-clean-demo) with cycle/depth guards, since real npm packages
@@ -327,6 +334,45 @@ def _parse_export_statement(node: Node, source: bytes, unit: _DtsUnit) -> None:
         ident = next((c for c in children if c.type == "identifier"), None)
         if ident is not None:
             unit.default_ref = _text(ident, source)
+        return
+
+    # KS-TRACE: S4.4-KB-DEFECT-A | fix (found during adversarial B5 verify,
+    # Session 4.4, against real installed packages): a bare `export { A, B,
+    # C };` list -- re-exporting names already declared elsewhere in this
+    # same file without an inline `export` keyword (`declare class X {...}`
+    # ... `export { X };`) -- fell through to the generic single-
+    # declaration fallback below, which expects ONE inline declaration
+    # node. An `export_clause` of `export_specifier`s doesn't match any
+    # `_parse_declaration` case, so these names were silently dropped from
+    # `exported_names` entirely. This is a common real-world bundler
+    # output shape (tsup / rollup-plugin-dts, among others) -- confirmed
+    # against real, installed `resend` and `@privy-io/react-auth`
+    # packages, both of which bundle their entire public API this way.
+    # Silently dropping these names is a FALSE POSITIVE generator: every
+    # legitimate `import { Resend } from "resend"` (and every React hook
+    # import, transitively via the same shape in @types/react) was
+    # flagged as an unresolved symbol on the first live TS/JS repo this
+    # engine was ever run against (yehor.ai PR #1). Fixed by recognizing
+    # a bare export_clause (no `from`) as a list of ALREADY-DECLARED local
+    # bindings and adding each one's external-facing name (the alias if
+    # `as` is used, matching the same idents[-1] convention as the
+    # re-export branch above) to `exported_names`. Handles `export { X }`,
+    # `export { X as Y }`, and `export type { X }` uniformly (the `type`
+    # keyword, if present, is just another sibling token and doesn't
+    # change export_clause detection).
+    # | test: test_bare_export_list_populates_exported_names,
+    #         test_bare_export_list_with_alias_uses_external_name,
+    #         test_bare_type_export_list_populates_exported_names,
+    #         test_bare_export_list_does_not_crash_on_empty_list
+    export_clause = next((c for c in children if c.type == "export_clause"), None)
+    if export_clause is not None:
+        for spec in export_clause.children:
+            if spec.type != "export_specifier":
+                continue
+            idents = [c for c in spec.children if c.type == "identifier"]
+            if not idents:
+                continue
+            unit.exported_names.add(_text(idents[-1], source))
         return
 
     # Direct export of a declaration: `export interface/const/function/...`

@@ -164,6 +164,79 @@ def test_declare_global_not_treated_as_augmentation():
     assert unit.has_module_augmentation is False
 
 
+# ---------------------------------------------------------------------------
+# S4.4-KB-DEFECT-A: bare `export { A, B, C };` list (no `from`) re-exporting
+# names declared elsewhere in the same file without an inline `export`
+# keyword -- the real shape resend/@privy-io/react-auth's bundled .d.ts use.
+# ---------------------------------------------------------------------------
+
+def test_bare_export_list_populates_exported_names():
+    unit = parse_dts_source(
+        'declare class Resend { key: string; }\n'
+        'declare class Attachment { name: string; }\n'
+        'export { Attachment, Resend };'
+    )
+    assert "Resend" in unit.exported_names
+    assert "Attachment" in unit.exported_names
+
+
+def test_bare_export_list_with_alias_uses_external_name():
+    # `export { Local as External }` -- consumers do
+    # `import { External } from "pkg"`, so the EXTERNAL name is what must
+    # land in exported_names, not the internal declaration name.
+    unit = parse_dts_source(
+        'declare class InternalResend { key: string; }\n'
+        'export { InternalResend as Resend };'
+    )
+    assert "Resend" in unit.exported_names
+    assert "InternalResend" not in unit.exported_names
+
+
+def test_bare_type_export_list_populates_exported_names():
+    unit = parse_dts_source(
+        'interface CreateEmailOptions { to: string; }\n'
+        'export type { CreateEmailOptions };'
+    )
+    assert "CreateEmailOptions" in unit.exported_names
+
+
+def test_bare_export_list_does_not_crash_on_empty_list():
+    # regression guard: `export {};` (no specifiers at all) must not crash
+    # and must not add any spurious symbol.
+    unit = parse_dts_source('export interface Foo {}\nexport {};')
+    assert "Foo" in unit.exported_names
+    assert unit.exported_names == {"Foo"}
+
+
+def test_resend_style_bundle_end_to_end_via_build_package_entry(tmp_path):
+    # KS-TRACE: reproduces the exact real-world shape that caused false
+    # positives on yehor.ai PR #1 -- declare-without-export followed by a
+    # single trailing bare export list, run through the full
+    # build_package_entry pipeline (not just parse_dts_source), so a
+    # regression here is caught the same way the live defect was.
+    pkg_dir = tmp_path / "resend-like"
+    pkg_dir.mkdir()
+    (pkg_dir / "package.json").write_text(
+        json.dumps({"name": "resend-like", "version": "1.0.0", "types": "./index.d.ts"}),
+        encoding="utf-8",
+    )
+    (pkg_dir / "index.d.ts").write_text(
+        'declare class Emails {\n'
+        '    send(payload: unknown): Promise<unknown>;\n'
+        '}\n'
+        'declare class Resend {\n'
+        '    readonly emails: Emails;\n'
+        '    constructor(key?: string);\n'
+        '}\n'
+        'export { Emails, Resend };\n',
+        encoding="utf-8",
+    )
+    entry = build_package_entry(pkg_dir, "resend-like", tmp_path)
+    assert entry["status"] == "ok"
+    assert "Resend" in entry["symbols"]
+    assert "Emails" in entry["symbols"]
+
+
 def test_class_extends_flattened_into_interface_chain():
     # mirrors the real axios shape: interface extends a CLASS
     unit = parse_dts_source(
