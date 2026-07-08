@@ -26,7 +26,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fixprove"
-version = "0.1.1"
+version = "0.1.5"
 description = "FixProve — deterministic AST-level verification that AI-generated code references real, installed symbols. Zero LLM tokens."
 readme = "README.md"
 license = { file = "LICENSE" }
