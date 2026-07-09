@@ -191,3 +191,117 @@ def test_malformed_source_does_not_crash():
     malformed = 'import axios from "axios"\n function broken( { const x = ; axios.get(("/x");'
     result = extract_symbols(malformed)  # tree-sitter's error tolerance -- must not raise
     assert isinstance(result, dict)
+
+
+# ---------------------------------------------------------------------------
+# S4.5-SYM-NEW-BINDING: `const/let/var x = new Foo(...)` extraction, added
+# to fix Defect B (KS-REPORT-4.4 Section 3) -- direct assignment ONLY, per
+# Yehor's explicit sign-off (see module docstring for the full boundary).
+# ---------------------------------------------------------------------------
+
+def test_new_binding_direct_assignment():
+    r = extract_symbols('const resend = new Resend(apiKey);')
+    assert r["new_bindings"] == [{"local_name": "resend", "class_name": "Resend", "line": 1}]
+
+
+def test_new_binding_let_and_var_also_captured():
+    r = extract_symbols('let a = new Foo();\nvar b = new Bar();')
+    by_name = {e["local_name"]: e["class_name"] for e in r["new_bindings"]}
+    assert by_name == {"a": "Foo", "b": "Bar"}
+
+
+def test_new_binding_skips_destructuring_pattern():
+    r = extract_symbols('const { a, b } = new Baz();')
+    assert r["new_bindings"] == []
+
+
+def test_new_binding_skips_namespaced_constructor():
+    r = extract_symbols('let x = new Foo.Bar(1, 2);')
+    assert r["new_bindings"] == []
+
+
+def test_new_binding_ignores_non_new_initializer():
+    r = extract_symbols('const x = someFactoryFn();\nconst y = 42;')
+    assert r["new_bindings"] == []
+
+
+def test_new_binding_reassignment_not_tracked():
+    # KS-TRACE: direct-assignment-only scope decision -- a plain
+    # reassignment (assignment_expression, not variable_declarator) is a
+    # structurally different node and is correctly never captured, with no
+    # extra code needed to exclude it.
+    r = extract_symbols('let resend;\nresend = new Resend(apiKey);')
+    assert r["new_bindings"] == []
+
+
+def test_new_binding_arguments_still_traversed_for_calls():
+    # the `new` expression's own arguments may contain calls/member chains
+    # that must still be captured normally -- the new_bindings extraction
+    # must not suppress the rest of the traversal.
+    r = extract_symbols('const resend = new Resend(getApiKey());')
+    assert any(c["expression"] == "getApiKey" for c in r["call_targets"])
+    assert r["new_bindings"] == [{"local_name": "resend", "class_name": "Resend", "line": 1}]
+
+
+def test_new_binding_json_serializable():
+    r = extract_symbols('const resend = new Resend(apiKey);')
+    json.dumps(r)
+
+
+# ---------------------------------------------------------------------------
+# Property-based test (Keystone Stage 3 requirement) on new_bindings' direct-
+# assignment-only contract -- the flagship NEW critical logic this session.
+# ---------------------------------------------------------------------------
+
+from hypothesis import given, settings, strategies as st  # noqa: E402
+
+_KEYWORDS = st.sampled_from(["const", "let", "var"])
+_NAME_KINDS = st.sampled_from(["plain", "destructure"])
+_VALUE_KINDS = st.sampled_from(["new_identifier", "new_member", "call", "literal"])
+
+
+@st.composite
+def _declarations(draw):
+    n = draw(st.integers(min_value=1, max_value=5))
+    decls = []
+    for i in range(n):
+        keyword = draw(_KEYWORDS)
+        name_kind = draw(_NAME_KINDS)
+        value_kind = draw(_VALUE_KINDS)
+        decls.append((f"v{i}", keyword, name_kind, value_kind))
+    return decls
+
+
+def _render_declarations(decls) -> str:
+    lines = []
+    for name, keyword, name_kind, value_kind in decls:
+        target = f"{{ {name}Prop }}" if name_kind == "destructure" else name
+        if value_kind == "new_identifier":
+            value = f"new Ctor{name}()"
+        elif value_kind == "new_member":
+            value = f"new ns.Ctor{name}()"
+        elif value_kind == "call":
+            value = f"someFn{name}()"
+        else:
+            value = "42"
+        lines.append(f"{keyword} {target} = {value};")
+    return "\n".join(lines)
+
+
+@given(decls=_declarations())
+@settings(max_examples=200)
+def test_new_binding_direct_assignment_property(decls):
+    # KS-TRACE: S4.5-PROPERTY-TEST | requirement: for ANY mix of
+    # declaration keywords/name-shapes/initializer-shapes, a new_bindings
+    # entry appears IF AND ONLY IF the declarator has a plain-identifier
+    # name AND a `new <plain identifier>(...)` initializer -- never for a
+    # destructuring target, a namespaced/member-expression constructor, a
+    # plain call, or a literal | test: this IS the property test (Keystone
+    # Stage 3 requirement)
+    src = _render_declarations(decls)
+    result = extract_symbols(src)
+    expected = sum(
+        1 for (_, _, name_kind, value_kind) in decls
+        if name_kind == "plain" and value_kind == "new_identifier"
+    )
+    assert len(result["new_bindings"]) == expected

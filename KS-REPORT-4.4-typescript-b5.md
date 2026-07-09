@@ -71,7 +71,7 @@ All code changes this session (the `ts_knowledge_base.py` parser fix, its five n
 Reviewed and directed in real time throughout by: Yehor Kaliberda (approved the fix-A-now/scope-B-and-C-later decision, the seeded-hallucination redesign, the v0.1.5 release, and this wrap-up protocol explicitly, at each respective decision point this session).
 
 Final document review: pending Yehor's read of this report before commit/push.
-
+Signed: Yehor Kaliberda
 Date: 08.07.26
 
 ## 6. Methodology note — one suggested improvement to the process itself

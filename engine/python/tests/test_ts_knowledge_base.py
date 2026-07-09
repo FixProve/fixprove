@@ -344,3 +344,169 @@ def test_malformed_package_json_degrades_to_no_types(tmp_path):
     (tmp_path / "package.json").write_text('{ this is not valid json ][')
     entry = build_package_entry(tmp_path, "broken-json-pkg", tmp_path.parent)
     assert entry["status"] == "no-types"
+
+
+# ---------------------------------------------------------------------------
+# S4.5-KB-DEFECT-B: class_member_symbols -- flattened member set per
+# EXPORTED class, so ts_resolver.py can check a hallucinated instance
+# method on `const x = new NamedImportClass(...)` (KS-REPORT-4.4 Section 3,
+# fixed this session per Yehor's direct-assignment-only sign-off).
+# ---------------------------------------------------------------------------
+
+def test_class_member_symbols_built_for_exported_class():
+    unit = parse_dts_source(
+        'declare class Foo { bar(): void; baz(): void; }\n'
+        'export { Foo };'
+    )
+    flat = _flatten_interface_members("Foo", unit.interfaces, unit.classes)
+    assert flat == {"bar", "baz"}
+
+
+def test_class_member_symbols_excludes_unexported_class(tmp_path):
+    # a class declared but never exported is not a valid named-import
+    # target in the first place -- class_member_symbols must not include it
+    (tmp_path / "package.json").write_text(json.dumps({"name": "unexp", "version": "1.0.0", "types": "index.d.ts"}))
+    (tmp_path / "index.d.ts").write_text(
+        'declare class Internal { secretMethod(): void; }\n'
+        'declare class Public { publicMethod(): void; }\n'
+        'export { Public };\n'
+    )
+    entry = build_package_entry(tmp_path, "unexp", tmp_path.parent)
+    assert "Public" in entry["class_member_symbols"]
+    assert "Internal" not in entry["class_member_symbols"]
+
+
+def test_class_member_symbols_resolves_real_resend_shape(tmp_path):
+    # KS-TRACE: reproduces the real Defect B seeded case's package shape
+    # (bare export list, Session 4.4's Defect A fix required to even reach
+    # this point) end-to-end through build_package_entry, not just
+    # parse_dts_source, so a regression is caught the same way the live
+    # defect would surface.
+    pkg_dir = tmp_path / "resend-instance-demo"
+    pkg_dir.mkdir()
+    (pkg_dir / "package.json").write_text(
+        json.dumps({"name": "resend-instance-demo", "version": "1.0.0", "types": "./index.d.ts"}))
+    (pkg_dir / "index.d.ts").write_text(
+        'declare class Emails {\n'
+        '    send(payload: unknown): Promise<unknown>;\n'
+        '}\n'
+        'declare class Resend {\n'
+        '    readonly emails: Emails;\n'
+        '    send(payload: unknown): Promise<unknown>;\n'
+        '    constructor(key?: string);\n'
+        '}\n'
+        'export { Emails, Resend };\n',
+        encoding="utf-8",
+    )
+    entry = build_package_entry(pkg_dir, "resend-instance-demo", tmp_path)
+    assert entry["status"] == "ok"
+    # KS-TRACE: "constructor" is legitimately present -- a `constructor(...)`
+    # signature parses as a real class member (property_identifier
+    # "constructor"), and every JS/TS instance genuinely has a `.constructor`
+    # property. Not a defect; the fixture's own declared shape includes it.
+    assert set(entry["class_member_symbols"]["Resend"]) == {"emails", "send", "constructor"}
+    assert "notAMethod" not in entry["class_member_symbols"]["Resend"]
+
+
+def test_class_member_symbols_present_on_every_status_branch(tmp_path):
+    # regression guard: not-installed/no-types/degraded must all carry the
+    # class_member_symbols key (empty dict) so resolver code can rely on
+    # .get(...) uniformly without a KeyError surprise on any status.
+    not_installed = build_package_entry(tmp_path / "does-not-exist", "does-not-exist", tmp_path)
+    assert not_installed["class_member_symbols"] == {}
+
+    (tmp_path / "package.json").write_text('{"name": "no-types-pkg", "version": "1.0.0"}')
+    no_types = build_package_entry(tmp_path, "no-types-pkg", tmp_path.parent)
+    assert no_types["class_member_symbols"] == {}
+
+
+# ---------------------------------------------------------------------------
+# S4.5-KB-DEFECT-C: `export = X` flattens X's members into exported_names
+# ONLY when X is a CONFIRMED `declare namespace X {...}` -- fixes the real
+# @types/react false-positive (every hook/type import) found live in
+# Session 4.4, without broadening non-namespace `export =` targets.
+# ---------------------------------------------------------------------------
+
+def test_parses_namespace_members():
+    unit = parse_dts_source(
+        'declare namespace ReactNS {\n'
+        '  function useState<S>(initial: S): [S, (s: S) => void];\n'
+        '  function useEffect(cb: () => void): void;\n'
+        '  class Component<P, S> {}\n'
+        '  type ReactNode = any;\n'
+        '  interface FormEvent<T> {}\n'
+        '}\n'
+    )
+    assert unit.namespaces["ReactNS"] == {"useState", "useEffect", "Component", "ReactNode", "FormEvent"}
+
+
+def test_namespace_not_confused_with_module_augmentation():
+    # `internal_module` (namespace) and `module` (declare module "...") are
+    # distinct tree-sitter node types -- a namespace must never flip
+    # has_module_augmentation (which would wrongly degrade the whole
+    # package).
+    unit = parse_dts_source('declare namespace NS { function f(): void; }')
+    assert unit.has_module_augmentation is False
+    assert "NS" not in unit.exported_names  # the namespace name itself is not a named-import target
+
+
+def test_export_equals_namespace_flattens_to_exported_names():
+    unit_source = (
+        'declare namespace ReactNS {\n'
+        '  function useState(): void;\n'
+        '  function useEffect(): void;\n'
+        '}\n'
+        'export = ReactNS;\n'
+    )
+    unit = parse_dts_source(unit_source)
+    assert unit.default_ref == "ReactNS"
+    assert unit.namespaces["ReactNS"] == {"useState", "useEffect"}
+
+
+def test_export_equals_namespace_real_react_shape(tmp_path):
+    # KS-TRACE: reproduces @types/react's real shape end-to-end (confirmed
+    # against the installed .d.ts in KS-REPORT-4.4 Section 3: `export =
+    # React;` / `export as namespace React;`, with every hook/type declared
+    # un-prefixed inside `declare namespace React {...}`).
+    pkg_dir = tmp_path / "react-namespace-demo"
+    pkg_dir.mkdir()
+    (pkg_dir / "package.json").write_text(
+        json.dumps({"name": "react-namespace-demo", "version": "1.0.0", "types": "./index.d.ts"}))
+    (pkg_dir / "index.d.ts").write_text(
+        'declare namespace ReactNS {\n'
+        '  function useState<S>(initial: S): [S, (s: S) => void];\n'
+        '  function useEffect(cb: () => void): void;\n'
+        '  class Component<P, S> {}\n'
+        '  type ReactNode = any;\n'
+        '  interface FormEvent<T> {}\n'
+        '}\n'
+        'export = ReactNS;\n'
+        'export as namespace ReactNS;\n',
+        encoding="utf-8",
+    )
+    entry = build_package_entry(pkg_dir, "react-namespace-demo", tmp_path)
+    assert entry["status"] == "ok"
+    for name in ("useState", "useEffect", "Component", "ReactNode", "FormEvent"):
+        assert name in entry["symbols"], f"{name} missing -- Defect C regression"
+    assert "totallyFakeHook" not in entry["symbols"]  # still catches a real hallucination
+
+
+def test_export_equals_class_not_namespace_unaffected(tmp_path):
+    # regression guard: `export = SomeClass` (NOT a namespace) must NOT
+    # leak the class's own members into exported_names as named-import
+    # targets -- only the namespace-confirmed shape gets this treatment.
+    pkg_dir = tmp_path / "class-export-equals-demo"
+    pkg_dir.mkdir()
+    (pkg_dir / "package.json").write_text(
+        json.dumps({"name": "class-export-equals-demo", "version": "1.0.0", "types": "./index.d.ts"}))
+    (pkg_dir / "index.d.ts").write_text(
+        'declare class Foo {\n'
+        '    bar(): void;\n'
+        '}\n'
+        'export = Foo;\n',
+        encoding="utf-8",
+    )
+    entry = build_package_entry(pkg_dir, "class-export-equals-demo", tmp_path)
+    assert entry["status"] == "ok"
+    assert "bar" not in entry["symbols"]  # NOT leaked as a named-import target
+    assert entry["default_export_symbols"] == ["bar"]  # unaffected: still valid via default-import access

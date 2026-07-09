@@ -12,13 +12,18 @@ JS/TS's different import/export grammar allows -- same three-category
 output idea, same 1-indexed line convention, same overlap rule for calls
 vs. attribute chains, same iterative (non-recursive) traversal.
 
-CONTRACT (locked with Yehor, 2026-07-04, Session 1.4)
+CONTRACT (locked with Yehor, 2026-07-04, Session 1.4; extended 2026-07-09,
+Session 4.5 -- see S4.5-SYM-NEW-BINDING below)
 -------------------------------------------------------
   Input       : path to one .ts or .tsx file (.js/.jsx accepted via the
                 same TypeScript grammar, since it is a syntactic superset;
                 type-only constructs simply won't appear in plain JS).
-  Output      : JSON-serializable dict with exactly three keys:
-                    imports, call_targets, attribute_chains
+  Output      : JSON-serializable dict with FOUR keys:
+                    imports, call_targets, attribute_chains, new_bindings
+                (new_bindings added Session 4.5 -- see below; the original
+                Session 1.4 contract had exactly three keys, imports/
+                call_targets/attribute_chains, and remains unchanged in
+                shape).
   Line numbers: 1-indexed (tree-sitter rows are 0-indexed; +1 here),
                 matching Session 1.1's convention exactly.
   Determinism : identical input -> byte-identical JSON, every run.
@@ -26,6 +31,35 @@ CONTRACT (locked with Yehor, 2026-07-04, Session 1.4)
                 emitted to call_targets ONLY, never also to
                 attribute_chains, even when the callee is a dotted
                 (member_expression) chain.
+
+new_bindings[] entry shape (KS-TRACE: S4.5-SYM-NEW-BINDING)
+--------------------------------------------------------
+  Added Session 4.5 to fix Defect B (KS-REPORT-4.4, Section 3): the
+  resolver could not trace a `new NamedImportClass(...)` instance back to
+  its import, so hallucinated instance methods (e.g.
+  `resend.notARealMethod()` on `const resend = new Resend(...)`) were
+  invisible to Pass B. This extraction is the syntactic half of that fix
+  (ts_knowledge_base.py/ts_resolver.py carry the semantic half).
+  {
+    "local_name": str,   # the variable name bound to the `new` result
+    "class_name": str,   # the identifier used as the `new` constructor
+    "line": int,
+  }
+  SCOPE DECISION (Yehor's explicit sign-off, Session 4.5): DIRECT
+  ASSIGNMENT ONLY. Captured: `const x = new Foo(...)` / `let x = new
+  Foo(...)` / `var x = new Foo(...)`, where the declarator's name is a
+  plain identifier (not a destructuring pattern) and the `new` expression's
+  constructor is a plain identifier (not a namespaced/member-expression
+  constructor like `new ns.Foo()`). NOT captured, by deliberate scope
+  choice rather than oversight: a later plain reassignment (`let x; x = new
+  Foo()`), and aliasing through another variable (`const y = x`). Both
+  would require additional tracking (re-binding an existing name mid-scope,
+  or propagating through simple identifier-to-identifier assignment) that
+  Yehor explicitly deferred in favor of the smallest change that fixes the
+  confirmed defect. Whether `class_name` actually refers to a real named
+  import (vs. a locally-defined class) is NOT resolved here -- purely
+  syntactic, cross-referenced against `imports` downstream in
+  ts_resolver.py's alias-map construction.
 
 imports[] entry shape (KS-TRACE: S1.4-IMPORTS-SCHEMA)
 --------------------------------------------------------
@@ -222,6 +256,38 @@ def _extract_export_statement(node: Node, source: bytes) -> list:
     return entries
 
 
+def _extract_new_bindings(node: Node, source: bytes) -> list:
+    # KS-TRACE: S4.5-SYM-NEW-BINDING | requirement: `const x = new Foo(...)`
+    # captured as {local_name: "x", class_name: "Foo", line}; destructuring
+    # targets (`const {a} = new Foo()`) and namespaced/member-expression
+    # constructors (`new ns.Foo()`) deliberately skipped -- both are
+    # structurally distinguishable by node type alone (object_pattern vs.
+    # identifier; member_expression vs. identifier), no heuristics needed
+    # | test: test_new_binding_direct_assignment,
+    #         test_new_binding_skips_destructuring_pattern,
+    #         test_new_binding_skips_namespaced_constructor,
+    #         test_new_binding_ignores_non_new_initializer
+    entries = []
+    for decl in node.children:
+        if decl.type != "variable_declarator":
+            continue
+        name_node = next((c for c in decl.children if c.type == "identifier"), None)
+        if name_node is None:
+            continue  # destructuring pattern (object_pattern/array_pattern) -- out of scope
+        value_node = next((c for c in decl.children if c.type == "new_expression"), None)
+        if value_node is None:
+            continue  # not a `new` initializer
+        ctor = next((c for c in value_node.children if c.type == "identifier"), None)
+        if ctor is None:
+            continue  # namespaced constructor (`new ns.Foo()`) -- out of scope
+        entries.append({
+            "local_name": _text(name_node, source),
+            "class_name": _text(ctor, source),
+            "line": _line(decl),
+        })
+    return entries
+
+
 # ---------------------------------------------------------------------------
 # Core traversal: calls + attribute chains (mirrors symbol_extractor.py's
 # _Extractor class structure and DEFECT-001/DEFECT-002 fixes proactively)
@@ -233,6 +299,7 @@ class _Extractor:
         self.imports: list = []
         self.call_targets: list = []
         self.attribute_chains: list = []
+        self.new_bindings: list = []
 
     def run(self, root: Node) -> None:
         # KS-TRACE: S1.4-TRAVERSAL | assumption: explicit-stack iterative
@@ -243,6 +310,20 @@ class _Extractor:
         stack = [(root, False)]
         while stack:
             node, suppress_attr = stack.pop()
+            if node.type in ("lexical_declaration", "variable_declaration"):
+                # KS-TRACE: S4.5-SYM-NEW-BINDING | requirement: recognize
+                # `const/let/var x = new Foo(...)` (direct assignment only,
+                # per Yehor's sign-off -- see module docstring) without
+                # disturbing normal traversal of the declarator's own
+                # contents (e.g. the `new` call's arguments may themselves
+                # contain calls/member chains that still need extraction)
+                # | test: test_new_binding_direct_assignment,
+                #         test_new_binding_skips_destructuring_pattern,
+                #         test_new_binding_skips_namespaced_constructor
+                self.new_bindings.extend(_extract_new_bindings(node, self.source))
+                for child in reversed(node.children):
+                    stack.append((child, False))
+                continue
             if node.type == "import_statement":
                 self.imports.extend(_extract_import_statement(node, self.source))
                 continue
@@ -344,6 +425,7 @@ def extract_symbols(source: str, tsx: bool = False) -> dict:
         "imports": sorted(extractor.imports, key=_sort_key),
         "call_targets": sorted(extractor.call_targets, key=_sort_key),
         "attribute_chains": sorted(extractor.attribute_chains, key=_sort_key),
+        "new_bindings": sorted(extractor.new_bindings, key=_sort_key),
     }
 
 

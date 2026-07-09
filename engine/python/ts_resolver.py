@@ -45,7 +45,16 @@ SCOPE ASSUMPTIONS (AI-logged, pending Yehor override)
 --------------------------------------------------------
   - Only references whose root identifier is a traceable import binding
     (default/named/namespace) are checked. Local variables/parameters are
-    silently skipped, same as the Python resolver.
+    silently skipped, same as the Python resolver -- WITH ONE EXCEPTION
+    added Session 4.5 to fix Defect B (KS-REPORT-4.4 Section 3): a local
+    variable directly assigned `new NamedImportClass(...)` is tracked as a
+    `named_import_instance` binding, checked against that class's
+    flattened member set at the SAME one-hop depth as every other binding
+    kind (see below). DIRECT ASSIGNMENT ONLY (Yehor's explicit sign-off):
+    a later plain reassignment or aliasing through another variable is
+    NOT tracked -- see ts_symbol_extractor.py's new_bindings docstring for
+    the exact boundary. Every other local variable/parameter remains
+    silently skipped exactly as before.
   - Relative-path imports (`./x`, `../y`) are OUT OF SCOPE this session --
     they resolve to project-local files, not npm dependencies, and
     checking them would require full local-module resolution (a
@@ -66,7 +75,20 @@ SCOPE ASSUMPTIONS (AI-logged, pending Yehor override)
   - Resolution depth is ONE HOP past the binding, identical in spirit to
     the Python resolver: `axios.get` is checked; `axios.defaults.headers`
     is only checked at hop 1 ("defaults" exists on the flattened type) --
-    deeper chains are unverified and not flagged.
+    deeper chains are unverified and not flagged. This applies UNIFORMLY
+    to `named_import_instance` bindings too (Session 4.5, Yehor's explicit
+    sign-off, rejecting a deeper alternative): the ORIGINAL Defect B
+    seeded case, `resend.emails.sendBulkWithRetry(...)` on `const resend =
+    new Resend(...)`, is a TWO-HOP chain (`resend` -> `.emails` [real
+    property, hop 1] -> `.sendBulkWithRetry` [hallucinated, hop 2]) and is
+    NOT caught by this fix -- catching it would require also flattening
+    the TYPE of each hop-1 property (not just the instance's own members),
+    a materially bigger change producing an inconsistent depth rule
+    between binding kinds. What IS caught: a hallucinated method or
+    property directly on the instance itself, e.g. `resend.notAMethod()`
+    -- the seeded test case was revised to this shape for this session's
+    live re-verification, matching exactly how `axios.getData()` (hop-1
+    hallucinated method on a default-import instance) is already caught.
 """
 
 from __future__ import annotations
@@ -96,7 +118,7 @@ def _is_relative(module: str) -> bool:
     return module.startswith(".")
 
 
-def _build_alias_map(imports: list) -> dict:
+def _build_alias_map(imports: list, new_bindings: Optional[list] = None) -> dict:
     """Map a locally-bound name -> its import binding info (Pass B use).
 
     KS-TRACE: S1.4-TS-ALIAS-MAP | requirement: default/namespace imports
@@ -107,6 +129,7 @@ def _build_alias_map(imports: list) -> dict:
             test_alias_map_skips_named_type_only_dynamic
     """
     alias_map: dict = {}
+    named_import_lookup: dict = {}  # local_name -> {"module", "imported_name"}, named imports only
     for entry in imports:
         if entry.get("flag") == "unresolvable-by-design":
             continue
@@ -119,6 +142,29 @@ def _build_alias_map(imports: list) -> dict:
             alias_map[entry["local_name"]] = {"kind": "default_import", "module": module, "line": entry["line"]}
         elif entry["kind"] == "namespace_import" and entry["local_name"]:
             alias_map[entry["local_name"]] = {"kind": "namespace_import", "module": module, "line": entry["line"]}
+        elif entry["kind"] == "named_import" and entry["local_name"] and entry.get("imported_name"):
+            named_import_lookup[entry["local_name"]] = {"module": module, "imported_name": entry["imported_name"]}
+
+    # KS-TRACE: S4.5-TS-DEFECT-B | requirement: `const x = new
+    # NamedImportClass(...)` binds x to that class's flattened member set
+    # (Defect B, KS-REPORT-4.4 Section 3) -- DIRECT ASSIGNMENT ONLY, per
+    # Yehor's sign-off: a new_binding whose class_name is not a named-import
+    # local name (a locally-defined class, or a default/namespace import
+    # used as a constructor -- out of scope, different binding shape
+    # entirely) is silently skipped, same "cannot verify -- never flag"
+    # spirit as every other ambiguous case in this module
+    # | test: test_alias_map_new_binding_named_import_instance,
+    #         test_alias_map_new_binding_skips_non_named_import_constructor
+    for nb in (new_bindings or []):
+        binding_info = named_import_lookup.get(nb["class_name"])
+        if binding_info is None:
+            continue
+        alias_map[nb["local_name"]] = {
+            "kind": "named_import_instance",
+            "module": binding_info["module"],
+            "class_name": binding_info["imported_name"],
+            "line": nb["line"],
+        }
     return alias_map
 
 
@@ -183,7 +229,7 @@ def check_source(source: str, kb: dict, filename: str = "<string>", tsx: bool = 
     # | test: test_catches_hallucinated_method_axios,
     #         test_does_not_flag_valid_axios_chain_method,
     #         test_resolution_stops_after_one_hop
-    alias_map = _build_alias_map(extracted["imports"])
+    alias_map = _build_alias_map(extracted["imports"], extracted.get("new_bindings"))
     for category in ("call_targets", "attribute_chains"):
         for entry in extracted[category]:
             parts = entry["expression"].split(".")
@@ -208,6 +254,23 @@ def check_source(source: str, kb: dict, filename: str = "<string>", tsx: bool = 
                     findings.append(unresolved_symbol_finding(filename, entry["line"], category, entry["expression"]))
             elif binding["kind"] == "namespace_import":
                 symbol_set = pkg_entry.get("symbols", [])
+                if hop1 not in symbol_set:
+                    findings.append(unresolved_symbol_finding(filename, entry["line"], category, entry["expression"]))
+            elif binding["kind"] == "named_import_instance":
+                # KS-TRACE: S4.5-TS-DEFECT-B | requirement: `x.notAMethod()`
+                # on `const x = new NamedImportClass(...)` checked against
+                # the class's flattened members, IDENTICAL one-hop depth to
+                # every other binding kind (Yehor's explicit sign-off: keep
+                # resolution depth uniform rather than special-casing
+                # instances to two hops -- see KS-REPORT-4.5 for the
+                # rejected deeper alternative) | test:
+                # test_catches_hallucinated_instance_method_resend,
+                # test_does_not_flag_valid_instance_method,
+                # test_instance_tracking_respects_one_hop
+                class_members = pkg_entry.get("class_member_symbols", {})
+                symbol_set = class_members.get(binding["class_name"])
+                if symbol_set is None:
+                    continue  # could not resolve this class's members -- cannot verify, never flag
                 if hop1 not in symbol_set:
                     findings.append(unresolved_symbol_finding(filename, entry["line"], category, entry["expression"]))
 

@@ -15,7 +15,9 @@ CONTRACT (locked with Yehor, 2026-07-04, Session 1.4)
             introspect (mirrors Session 1.2's requirements.txt input,
             adapted to package.json dependencies).
   Output  : {"packages": {pkg_name: {status, version, symbols,
-                                      default_export_symbols}}}
+                                      default_export_symbols,
+                                      class_member_symbols}}}
+            (class_member_symbols added Session 4.5 -- see below)
   Locating a package's types (Node/DefinitelyTyped convention):
       1. package.json "types" or "typings" field (bundled types)
       2. fallback: node_modules/@types/<scoped-safe-name>/package.json
@@ -52,7 +54,24 @@ CONTRACT (locked with Yehor, 2026-07-04, Session 1.4)
                           -- for `import pkg from "pkg"; pkg.member`.
                           None if there is no default export, or its
                           bound type could not be resolved to a known
-                          interface.
+                          interface. If `export = X` resolves to a
+                          CONFIRMED `declare namespace X {...}` rather than
+                          a class/interface, X's un-prefixed members are
+                          instead flattened into `symbols` (see
+                          S4.5-KB-DEFECT-C below) -- this field stays None
+                          in that case, since a namespace has no "default
+                          import member access" semantics of its own.
+  class_member_symbols  : added Session 4.5 to fix Defect B (KS-REPORT-4.4,
+                          Section 3). Map of {exported_class_name: [member,
+                          ...]} -- the SAME extends-chain flattening used
+                          for default_export_symbols, but keyed per class so
+                          ts_resolver.py can check a hallucinated instance
+                          method on `const x = new NamedImportClass(...)`.
+                          Only populated for classes already present in
+                          `symbols` (i.e. actually exported); a class
+                          nested inside a `declare namespace` is NOT
+                          included (namespace members are name-only, see
+                          _namespace_member_names).
 
 ADVERSARIAL CASES (locked, Session 1.4)
 ------------------------------------------
@@ -77,6 +96,20 @@ ADVERSARIAL CASES (locked, Session 1.4)
     (fp-ts-clean-demo) with cycle/depth guards, since real npm packages
     available in this sandbox did not happen to exercise multi-file
     re-export chains as cleanly as a hand-built fixture can.
+  * @types/react (real, installed, Session 4.4 discovery / Session 4.5
+    fix): `export = React;` where `React` is a `declare namespace React
+    {...}` containing `useState`, `useEffect`, `Component`, `ReactNode`,
+    `FormEvent`, and every other hook/type un-prefixed (confirmed directly
+    against the installed .d.ts, lines 67-68 for the `export =` /
+    `export as namespace` pair). Fixed by S4.5-KB-DEFECT-C: namespace
+    members flattened into `exported_names` ONLY when `export =`'s target
+    is a confirmed namespace, never universally (see build_package_entry).
+  * resend (real, installed, Session 4.5): `const resend = new
+    Resend(apiKey); resend.notARealMethod();` -- Resend is a named-import
+    class (not the default export), so its instance's hallucinated method
+    was invisible to Pass B until S4.5-KB-DEFECT-B added
+    `class_member_symbols`, reusing the same extends-chain flattening
+    already proven against axios's default-export chain.
 
 SCOPE ASSUMPTIONS (AI-logged, pending Yehor override)
 --------------------------------------------------------
@@ -96,6 +129,17 @@ SCOPE ASSUMPTIONS (AI-logged, pending Yehor override)
     unresolvable for that specific re-export only (degrades that single
     name, not the whole package), a narrower blast radius than the
     module-augmentation trigger above.
+  - (Session 4.5) `declare namespace X {...}` members are collected
+    NAME-ONLY (existence, for `exported_names`), never member-flattened
+    themselves -- a class declared inside a namespace does NOT get a
+    `class_member_symbols` entry. Nested `namespace` blocks inside another
+    namespace are not recursed into. Namespace merging happens only via
+    the triple-slash-reference transitive-load path (`_merge_units`), NOT
+    via the relative-barrel re-export path (`_resolve_reexports`) -- no
+    real package exercising a namespace split across barrel re-exports was
+    found this session; if one surfaces, extend `_resolve_reexports` to
+    propagate `sub_merged.namespaces` the same way it already propagates
+    `sub_merged.exported_names`.
 """
 
 from __future__ import annotations
@@ -139,6 +183,10 @@ class _DtsUnit:
         self.functions: set = set()
         self.classes: dict = {}         # name -> {"extends": Optional[str]}
         self.enums: set = set()
+        self.namespaces: dict = {}      # name -> set() of un-prefixed member names
+                                         # (KS-TRACE: S4.5-KB-DEFECT-C, see
+                                         # _parse_declaration's internal_module
+                                         # branch and build_package_entry)
         self.exported_names: set = set()
         self.default_ref: Optional[str] = None
         self.named_reexports: list = []  # (local_name, original_name, from_module)
@@ -180,6 +228,41 @@ def _interface_member_names(body: Node, source: bytes) -> set:
             prop = next((c for c in child.children if c.type == "property_identifier"), None)
             if prop is not None:
                 members.add(_text(prop, source))
+    return members
+
+
+def _namespace_member_names(body: Node, source: bytes) -> set:
+    # KS-TRACE: S4.5-KB-DEFECT-C | requirement: collect the NAME of each
+    # un-prefixed declaration directly inside a `declare namespace X {...}`
+    # block -- function/class/interface/type-alias/enum/const, exactly the
+    # shape @types/react's `declare namespace React {...}` uses for every
+    # hook and type (`useState`, `Component`, `ReactNode`, `FormEvent`, ...).
+    # Deliberately shallow: this is an EXISTENCE list only (for populating
+    # exported_names so named-import checks pass), not a member-flattening
+    # pass -- a namespace-nested class's OWN members are NOT captured here
+    # (see build_package_entry's class_member_symbols comment for why that
+    # is an accepted, narrower scope boundary rather than an oversight).
+    # Nested `namespace` blocks are not recursed into (out of scope, no
+    # real package exercising this was found this session).
+    # | test: test_namespace_member_names_function_class_interface_type_enum,
+    #         test_namespace_member_names_ignores_nested_namespace
+    members = set()
+    for child in body.children:
+        if child.type in ("function_declaration", "function_signature", "enum_declaration"):
+            ident = next((c for c in child.children if c.type == "identifier"), None)
+            if ident is not None:
+                members.add(_text(ident, source))
+        elif child.type in ("class_declaration", "interface_declaration", "type_alias_declaration"):
+            name_node = next((c for c in child.children if c.type == "type_identifier"), None)
+            if name_node is not None:
+                members.add(_text(name_node, source))
+        elif child.type == "lexical_declaration":
+            for decl in child.children:
+                if decl.type != "variable_declarator":
+                    continue
+                ident = next((c for c in decl.children if c.type == "identifier"), None)
+                if ident is not None:
+                    members.add(_text(ident, source))
     return members
 
 
@@ -287,6 +370,22 @@ def _parse_declaration(node: Node, source: bytes, unit: _DtsUnit, exported: bool
                 unit.has_module_augmentation = True
             elif inner.type == "global":
                 pass  # KS-TRACE: `declare global` intentionally ignored (see module docstring)
+            elif inner.type == "internal_module":
+                # KS-TRACE: S4.5-KB-DEFECT-C | requirement: `declare
+                # namespace X {...}` recorded into unit.namespaces[X], NOT
+                # treated as module augmentation (`internal_module` is a
+                # distinct tree-sitter node type from `module`) and NOT
+                # added to exported_names itself (the namespace name is not
+                # a named-import target on its own -- only relevant as a
+                # potential `export = X` target, resolved in
+                # build_package_entry) | test:
+                # test_parses_namespace_members, test_namespace_not_confused_with_module_augmentation
+                name_node = next((c for c in inner.children if c.type == "identifier"), None)
+                if name_node is not None:
+                    ns_name = _text(name_node, source)
+                    body = next((c for c in inner.children if c.type == "statement_block"), None)
+                    members = _namespace_member_names(body, source) if body is not None else set()
+                    unit.namespaces[ns_name] = unit.namespaces.get(ns_name, set()) | members
             else:
                 _parse_declaration(inner, source, unit, exported)
 
@@ -502,6 +601,8 @@ def _merge_units(units: dict) -> _DtsUnit:
                 "members": existing["members"] | centry["members"],
             }
         merged.enums |= unit.enums
+        for ns_name, ns_members in unit.namespaces.items():
+            merged.namespaces[ns_name] = merged.namespaces.get(ns_name, set()) | ns_members
         merged.exported_names |= unit.exported_names
         if merged.default_ref is None:
             merged.default_ref = unit.default_ref
@@ -649,12 +750,14 @@ def build_package_entry(pkg_dir: Path, pkg_name: str, node_modules: Path) -> dic
     test_build_entry_not_installed
     """
     if not pkg_dir.is_dir():
-        return {"status": "not-installed", "version": None, "symbols": [], "default_export_symbols": None}
+        return {"status": "not-installed", "version": None, "symbols": [], "default_export_symbols": None,
+                "class_member_symbols": {}}
 
     entry_path, pkg_json = _locate_entry_dts(pkg_dir, pkg_name, node_modules)
     version = pkg_json.get("version") if pkg_json else None
     if entry_path is None:
-        return {"status": "no-types", "version": version, "symbols": [], "default_export_symbols": None}
+        return {"status": "no-types", "version": version, "symbols": [], "default_export_symbols": None,
+                "class_member_symbols": {}}
 
     try:
         units = _load_units_transitively(entry_path)
@@ -665,25 +768,87 @@ def build_package_entry(pkg_dir: Path, pkg_name: str, node_modules: Path) -> dic
         # failure degrades this package only, mirrors Session 1.2's
         # subprocess-isolation crash containment | test:
         # test_build_entry_survives_parse_exception
-        return {"status": "degraded", "version": version, "symbols": [], "default_export_symbols": None}
+        return {"status": "degraded", "version": version, "symbols": [], "default_export_symbols": None,
+                "class_member_symbols": {}}
 
     if merged.has_module_augmentation:
-        return {"status": "degraded", "version": version, "symbols": [], "default_export_symbols": None}
+        return {"status": "degraded", "version": version, "symbols": [], "default_export_symbols": None,
+                "class_member_symbols": {}}
 
-    symbols = sorted(merged.exported_names)
+    exported_names = set(merged.exported_names)
 
     default_export_symbols = None
     if merged.default_ref is not None:
         type_name = merged.consts.get(merged.default_ref)
         if type_name is None and merged.default_ref in merged.interfaces:
             type_name = merged.default_ref
+        # KS-TRACE: S4.5-KB-DEFECT-D | fix (found this session via the
+        # Defect C regression test `export = Foo` where Foo is a class
+        # declared directly, not via a `declare const x: Foo` alias --
+        # e.g. `declare class Foo {...} export = Foo;`): the type_name
+        # fallback above only ever checked `merged.interfaces`, so a
+        # default_ref pointing straight at a CLASS name fell through with
+        # type_name still None, silently losing default_export_symbols
+        # for a real, valid shape (this is structurally the SAME
+        # export-equals-a-declaration pattern already handled for
+        # interfaces, just never extended to classes) -- pre-existing gap
+        # in Session 1.4's code, newly exposed by this session's own
+        # adversarial test, not a Defect B/C regression itself
+        # | test: test_export_equals_class_not_namespace_unaffected
+        if type_name is None and merged.default_ref in merged.classes:
+            type_name = merged.default_ref
         if type_name is not None and (type_name in merged.interfaces or type_name in merged.classes):
             default_export_symbols = sorted(
                 _flatten_interface_members(type_name, merged.interfaces, merged.classes))
+        # KS-TRACE: S4.5-KB-DEFECT-C | fix (found live, Session 4.4;
+        # designed+fixed Session 4.5, Yehor sign-off: NAMESPACE-CONFIRMED
+        # ONLY, not universal `export =` flattening): @types/react declares
+        # `export = React;` where `React` is a `declare namespace React
+        # {...}` (confirmed directly against the real installed .d.ts --
+        # see KS-REPORT-4.4 Section 3). TypeScript's real interop treats
+        # every un-prefixed namespace member as a valid named-import target
+        # under this shape, so `import { useState } from "react"` is
+        # legitimate and must not be flagged. Only triggers when
+        # `default_ref` resolves to a CONFIRMED namespace (present in
+        # merged.namespaces); `export = SomeClass` / `export =
+        # SomeInterface` are completely unaffected -- deliberately narrower
+        # than flattening every `export =` target, per the zero-false-
+        # positive mandate (an unconfirmed shape stays silent, not guessed
+        # at) | test: test_export_equals_namespace_flattens_to_exported_names,
+        #         test_export_equals_class_not_namespace_unaffected,
+        #         test_export_equals_namespace_real_react_shape
+        if merged.default_ref in merged.namespaces:
+            exported_names |= merged.namespaces[merged.default_ref]
+
+    symbols = sorted(exported_names)
+
+    # KS-TRACE: S4.5-KB-DEFECT-B | requirement: a flattened member set per
+    # EXPORTED class (extends chains resolved, reusing the same
+    # _flatten_interface_members already proven against axios's real
+    # 3-level chain) so ts_resolver.py's Pass B can check a hallucinated
+    # instance method on `const x = new NamedImportClass(...)` (Defect B --
+    # see KS-REPORT-4.4 Section 3) the same way it already checks a default
+    # import's flattened members. Scoped to names already in
+    # `exported_names` (mirrors `symbols`'s own scope) -- a class declared
+    # but never exported is not a valid named-import target in the first
+    # place, so tracking its instance members would never be reachable from
+    # Pass B. Namespace-nested classes (e.g. react's `Component`) are NOT
+    # included here (namespace members are name-only, per
+    # _namespace_member_names' docstring) -- an accepted narrower scope
+    # boundary, not an oversight.
+    # | test: test_class_member_symbols_built_for_exported_class,
+    #         test_class_member_symbols_excludes_unexported_class,
+    #         test_class_member_symbols_resolves_real_resend_shape
+    class_member_symbols = {
+        cname: sorted(_flatten_interface_members(cname, merged.interfaces, merged.classes))
+        for cname in merged.classes
+        if cname in exported_names
+    }
 
     return {
         "status": "ok", "version": version,
         "symbols": symbols, "default_export_symbols": default_export_symbols,
+        "class_member_symbols": class_member_symbols,
     }
 
 
