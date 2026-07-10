@@ -32,3 +32,57 @@ jobs:
 
       - name: Test all workspaces
         run: pnpm test
+
+  # #KS-TRACE: S4.6-CI-PYTHON-GATE | requirement: "ci.yml does not currently
+  # run the Python suite (engine/python/tests/, 217 tests) on regular
+  # pushes/PRs -- only the release pipeline does. Wire it in as a gate."
+  # (Session 4.6 mandate, priority 2). Runs as its own parallel job, not
+  # appended to `build`, so a Python failure surfaces as a distinct, named
+  # status check ("test-python") rather than being conflated with the TS/JS
+  # job's "build" status -- explicit Yehor sign-off, Session 4.6.
+  # assumption: this job's steps are a direct copy of release.yml's `test`
+  # job's Python-specific steps (setup-python, requirements.txt, the three
+  # corpus fixtures, ts_corpus npm ci, pytest), not a reinvention -- that
+  # exact sequence is what Session 4.2 fixed after the v0.1.0 release-gate
+  # failure (missing corpus fixtures caused precision 0.143 / 8 false
+  # positives), so re-deriving it from scratch here risked reintroducing
+  # the same defect in a second location. `fastapi-helpers-fake` is
+  # deliberately NEVER installed -- it is corpus/manifest.json's
+  # "dependency-not-installed" true-positive fixture.
+  # | test: verified locally in a scratch copy (off-mount, avoiding the
+  # known FixProve-mount write quirk) before this edit -- 217/217 passed
+  # with exactly this fixture set, matching the mandate's stated count.
+  test-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python engine test dependencies
+        working-directory: engine/python
+        run: pip install --break-system-packages -r requirements.txt
+
+      - name: Install Python corpus-eval fixtures (real deps + local hard-exit fixture)
+        working-directory: engine/python
+        run: |
+          set -e
+          pip install --break-system-packages pandas==2.3.3 requests==2.34.2
+          pip install --break-system-packages ./corpus/local_fixtures/fp-monkeypatch-demo
+          # fastapi-helpers-fake is deliberately NEVER installed -- it is the
+          # corpus's "dependency-not-installed" true-positive fixture (see
+          # corpus/manifest.json and corpus/hallucinated/uninstalled_dependency.py).
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install TS/JS corpus-eval fixtures (real npm deps, not part of the pnpm workspace)
+        working-directory: engine/python/ts_corpus
+        run: npm ci
+
+      - name: Test Python engine
+        working-directory: engine/python
+        run: python -m pytest tests/ -q
