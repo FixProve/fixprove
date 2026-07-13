@@ -1,6 +1,6 @@
 {
   "name": "fixprove",
-  "version": "0.1.6",
+  "version": "0.1.8",
   "description": "FixProve CLI (open-core) - deterministic AST-level verification that AI-generated code references real, installed symbols.",
   "license": "MIT",
   "type": "module",
@@ -27,7 +27,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/fixprove/fixprove.git",
+    "url": "https://github.com/FixProve/fixprove.git",
     "directory": "cli"
   },
   "homepage": "https://fixprove.dev"

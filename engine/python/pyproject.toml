@@ -26,7 +26,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fixprove"
-version = "0.1.6"
+version = "0.1.8"
 description = "FixProve — deterministic AST-level verification that AI-generated code references real, installed symbols. Zero LLM tokens."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -100,7 +100,7 @@ Homepage = "https://fixprove.dev"
 # real GitHub Actions run (v0.1.4 tag) -- this class of defect can only be
 # caught by a live PyPI upload, not local build/inspect checks.
 "GitHub App (paid CI)" = "https://fixprove.dev/app"
-Repository = "https://github.com/fixprove/fixprove"
+Repository = "https://github.com/FixProve/fixprove"
 
 # KS-TRACE: S3.1-CONSOLE-SCRIPT | requirement: "TS CLI wrapper ... correctly
 # invokes the Python core" needs a stable, documented invocation surface.
