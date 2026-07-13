@@ -249,26 +249,29 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm --filter fixprove build
 
-      # #KS-TRACE: S4.2-DEFECT-NPM-PROVENANCE | requirement: fix v0.1.2's real
-      # npm publish failure -- "npm error code E422 ... Unsupported GitHub
-      # Actions source repository visibility: 'private'. Only public source
-      # repositories are supported when publishing with provenance." npm's
-      # --provenance flag categorically requires the SOURCE repo to be
-      # public; FixProve/fixprove is deliberately private until the
-      # project's own D2 public-launch step (see Session 4.1's log --
-      # flipping to public is a deliberate, separate decision, not a side
-      # effect of CI plumbing). DECISION (Yehor, Session 4.2, explicit):
-      # drop --provenance now so the CLI can actually publish and unblock
-      # live end-to-end testing of the GitHub Action template on private
-      # test repos -- restoring it is deferred to immediately before the D2
-      # public flip, not indefinitely. | assumption: this is a temporary,
-      # explicitly-approved tradeoff (no supply-chain attestation during
-      # the private-beta window), not a permanent removal -- flagged again
-      # in the Known Limitations of this session's Keystone Report so it
-      # isn't silently forgotten before D2 | test: real GitHub Actions run
-      # (v0.1.3 tag)
+      # #KS-TRACE: S4.7-PROVENANCE-RESTORE | requirement: D2 public-repo flip
+      # (Session 4.6/4.7 open item #1) -- restore `--provenance`, deferred
+      # since Session 4.2's S4.2-DEFECT-NPM-PROVENANCE (real v0.1.2 failure:
+      # "npm error code E422 ... Unsupported GitHub Actions source
+      # repository visibility: 'private'. Only public source repositories
+      # are supported when publishing with provenance."). ASSUMPTION
+      # (AI-logged, pending Yehor override): this job only ever runs on a
+      # `v*.*.*` tag push (see workflow trigger above); Yehor's D2 sequence
+      # flips FixProve/fixprove to public via the GitHub UI BEFORE any tag
+      # is pushed after this merge, so by the time this step actually
+      # executes on a real release the visibility precondition already
+      # holds. If a tag is pushed while the repo is still private, this
+      # step will fail with the same E422 as v0.1.2 -- that is the correct,
+      # expected failure mode, not a regression, and must not be "fixed" by
+      # dropping --provenance again without Yehor's explicit sign-off.
+      # `id-token: write` already present in this job's permissions block
+      # (S4.2-DEFECT-PUBLISH-PERMISSIONS fix), so no permissions change is
+      # required for provenance to work. | test: real GitHub Actions run on
+      # the v0.1.7 tag, with FixProve/fixprove already public -- verify the
+      # npm publish step's own log reports a valid Sigstore provenance
+      # attestation (not just job success).
       - name: Publish to npm
         working-directory: cli
-        run: npm publish --access public
+        run: npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
