@@ -16,12 +16,15 @@ are the durable source of truth, not this summary.
 
 **Live state:**
 
-* GitHub: `FixProve/fixprove` `main` at `0794a85`, three PRs merged this
+* GitHub: `FixProve/fixprove` `main` at `c3a6832`, four PRs merged this
   session — #5 (`feat/npm-oidc-trusted-publishing`, `0166cac`: adds
   `environment: npm`, Node 24 + `npm install -g npm@latest` for
   `publish-npm`, bump to `v0.1.9`), #6 (`fix/remove-legacy-npm-token-env`,
   `408e7a6`: removes the now-proven-unnecessary `NODE_AUTH_TOKEN` env
-  block), #7 (`docs/ks-report-4.8`, `0794a85`: the Keystone Report).
+  block), #7 (`docs/ks-report-4.8`, `0794a85`: the Keystone Report), #8
+  (`docs/session-4.8-log`, `c3a6832`: session log, index update, this
+  starting prompt, and a plain-language client summary — no functional
+  change).
 * A GitHub Environment named `npm` now exists (Settings → Environments),
   no protection rules — mirrors `environment: pypi` for structural parity
   only, not a security gate (that's an explicitly deferred future
