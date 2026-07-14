@@ -13,9 +13,12 @@
 # (D4: a PyPI API token was pasted in plaintext in a chat session and had
 # to be revoked) -- Trusted Publishing eliminates that entire class of
 # risk by never having a long-lived PyPI token to leak in the first place.
-# npm publishing uses a classic NPM_TOKEN repo secret (npm's own OIDC
-# Trusted Publishers support is newer/less universally available than
-# PyPI's), combined with `--provenance` for supply-chain attestation.
+# npm publishing uses npm's Trusted Publishing (OIDC, `id-token: write`,
+# GA since 2025-07-31) as of Session 4.8 -- see S4.8-NPM-OIDC-MIGRATION
+# below on the publish-npm job for the full trace. NPM_TOKEN is retained
+# as a same-run automatic fallback during the transition window (Yehor
+# decision, Session 4.8, Q3: phased rollout) -- it is NOT revoked until a
+# real tag proves the OIDC path works end-to-end.
 name: Release
 
 on:
@@ -219,15 +222,66 @@ jobs:
         with:
           packages-dir: engine/python/dist
 
-  # KS-TRACE: S3.1-RELEASE-NPM | classic token-based publish + provenance
-  # attestation. NPM_TOKEN must be set as a repo secret (Settings ->
-  # Secrets and variables -> Actions) -- see Keystone Report Known
-  # Limitations for why this differs from the PyPI job's OIDC approach.
+  # #KS-TRACE: S4.8-NPM-OIDC-MIGRATION | requirement: open item #1 carried
+  # since Session 4.7 -- migrate off the bypass-2FA NPM_TOKEN before npm's
+  # own deprecation timeline (restricted Aug 2026, eliminated Jan 2027).
+  # Mirrors publish-pypi's existing OIDC approach. Verified against live
+  # npm docs (docs.npmjs.com/trusted-publishers, GA since 2025-07-31) and
+  # an independent real-world account (philna.sh, 2026-01-28) during this
+  # session's Stage 1 intake -- NOT assumed from training-data recall,
+  # since this feature postdates the AI's reliable knowledge cutoff.
+  #
+  # ASSUMPTIONS (AI-logged, Yehor-approved Session 4.8, Q1-Q4):
+  # Q1 (Node/npm bump): belt-and-suspenders -- Node 24 via setup-node AND
+  #   an explicit `npm install -g npm@latest` step. Docs require npm CLI
+  #   >=11.5.1 + Node >=22.14.0; the field account found the version-bump
+  #   claim alone insufficient in practice and needed the explicit global
+  #   npm upgrade to get a working publish, so both are applied here as a
+  #   deliberately redundant, low-cost hedge against exactly that gap.
+  # Q2 (environment symmetry): `environment: npm` added, mirroring
+  #   publish-pypi's `environment: pypi`, WITHOUT required-reviewer
+  #   protection rules for now -- Yehor must create this GitHub Environment
+  #   manually (Settings -> Environments -> New environment -> "npm");
+  #   not automatable from here. Adding required reviewers later is a
+  #   separate, deferred decision, not bundled into this change.
+  # Q3 (phased rollout): NODE_AUTH_TOKEN is deliberately NOT removed from
+  #   this step's env. npm's own docs state the CLI tries OIDC first and
+  #   automatically falls back to a supplied token in the SAME run if OIDC
+  #   fails -- so this is a live, same-run safety net, not just an
+  #   emergency git-revert fallback. NPM_TOKEN stays live on npm's side too
+  #   (no "disallow tokens" toggle) until a real tag proves OIDC actually
+  #   fired. KNOWN CONSEQUENCE: a successful publish on the verification
+  #   tag does NOT by itself prove OIDC worked -- it could have silently
+  #   fallen through to the token. Stage 3 verification must inspect the
+  #   job's own npm-publish log output for explicit evidence of the OIDC
+  #   token exchange, not just check that the package went live.
+  # Q4 (live verification): a real `v0.1.9` tag is pushed this session to
+  #   verify the OIDC handshake live, per Yehor's explicit instruction --
+  #   npm does not validate trusted-publisher config at save time, so this
+  #   is the only way to actually verify it, consistent with this
+  #   project's "unverified means unverified" standing rule.
+  #
+  # PRECONDITION (manual, Yehor-only, not automatable from here): a
+  # Trusted Publisher must be configured at
+  # https://www.npmjs.com/package/fixprove/access (NOT the generic
+  # account-level packages settings page) with Organization/user
+  # "FixProve", Repository "fixprove", Workflow filename "release.yml"
+  # (exact, case-sensitive), Environment name "npm" (matching the GitHub
+  # Environment above), and "npm publish" explicitly checked under Allowed
+  # actions (configs created after 2026-05-20 do not default this on).
+  # This MUST be done before the v0.1.9 tag is pushed, or the OIDC path
+  # will not exist yet to fall back FROM.
+  # | test: real GitHub Actions run on the v0.1.9 tag -- job log must show
+  # explicit OIDC token exchange evidence (not inferred from publish
+  # success alone); package page on npmjs.com must show a valid Sigstore
+  # provenance attestation.
   publish-npm:
     needs: verify-artifact-contents
     runs-on: ubuntu-latest
+    environment: npm
     # #KS-TRACE: S4.2-DEFECT-PUBLISH-PERMISSIONS | see publish-pypi's own
-    # KS-TRACE above -- identical root cause and fix.
+    # KS-TRACE above -- identical root cause and fix. id-token: write also
+    # doubles as the OIDC permission required by S4.8-NPM-OIDC-MIGRATION.
     permissions:
       contents: read
       id-token: write
@@ -238,38 +292,42 @@ jobs:
         with:
           version: 9.12.0
 
+      # #KS-TRACE: S4.8-NPM-OIDC-MIGRATION (Q1) | Node bumped from 20 to 24
+      # for this job only -- trusted publishing requires Node >=22.14.0.
+      # Other jobs (test, verify-artifact-contents) are intentionally left
+      # on Node 20; only the publish step has the OIDC requirement.
+      # ASSUMPTION: pnpm 9.12.0 is compatible with Node 24 -- not verified
+      # in this sandbox (no live GitHub Actions runner access here); if
+      # `pnpm install`/`pnpm --filter fixprove build` fails on Node 24 in
+      # the real run, that is a new defect to log, not a silent revert to
+      # Node 20.
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: "pnpm"
           registry-url: "https://registry.npmjs.org"
+
+      # #KS-TRACE: S4.8-NPM-OIDC-MIGRATION (Q1) | explicit global npm
+      # upgrade -- see the module-level KS-TRACE above for why this is
+      # kept even though Node 24's bundled npm is expected to already
+      # satisfy the >=11.5.1 requirement. Belt-and-suspenders, not
+      # redundant ceremony: a real-world account found this step load-
+      # bearing even on a recent Node/npm baseline.
+      - name: Ensure npm CLI supports Trusted Publishing (>=11.5.1)
+        run: npm install -g npm@latest
 
       - name: Install + build
         run: |
           pnpm install --frozen-lockfile
           pnpm --filter fixprove build
 
-      # #KS-TRACE: S4.7-PROVENANCE-RESTORE | requirement: D2 public-repo flip
-      # (Session 4.6/4.7 open item #1) -- restore `--provenance`, deferred
-      # since Session 4.2's S4.2-DEFECT-NPM-PROVENANCE (real v0.1.2 failure:
-      # "npm error code E422 ... Unsupported GitHub Actions source
-      # repository visibility: 'private'. Only public source repositories
-      # are supported when publishing with provenance."). ASSUMPTION
-      # (AI-logged, pending Yehor override): this job only ever runs on a
-      # `v*.*.*` tag push (see workflow trigger above); Yehor's D2 sequence
-      # flips FixProve/fixprove to public via the GitHub UI BEFORE any tag
-      # is pushed after this merge, so by the time this step actually
-      # executes on a real release the visibility precondition already
-      # holds. If a tag is pushed while the repo is still private, this
-      # step will fail with the same E422 as v0.1.2 -- that is the correct,
-      # expected failure mode, not a regression, and must not be "fixed" by
-      # dropping --provenance again without Yehor's explicit sign-off.
-      # `id-token: write` already present in this job's permissions block
-      # (S4.2-DEFECT-PUBLISH-PERMISSIONS fix), so no permissions change is
-      # required for provenance to work. | test: real GitHub Actions run on
-      # the v0.1.7 tag, with FixProve/fixprove already public -- verify the
-      # npm publish step's own log reports a valid Sigstore provenance
-      # attestation (not just job success).
+      # #KS-TRACE: S4.8-NPM-OIDC-MIGRATION (Q3) | --provenance kept
+      # explicit (not relying on OIDC's "automatic" provenance claim --
+      # see module-level KS-TRACE: a real-world account found the
+      # automatic-provenance claim did not hold reliably in practice).
+      # NODE_AUTH_TOKEN is deliberately still passed -- see module-level
+      # KS-TRACE (Q3) for why this is a live same-run fallback, not dead
+      # code to clean up.
       - name: Publish to npm
         working-directory: cli
         run: npm publish --access public --provenance
