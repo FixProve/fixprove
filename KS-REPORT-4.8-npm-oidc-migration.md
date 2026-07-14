@@ -197,8 +197,8 @@ disclosure of what remains unproven. All architectural decisions were
 approved by Yehor before execution; all registry and GitHub configuration
 changes were performed by Yehor personally.
 
-Signed: ___________________________ (Yehor)
-Date: ___________________________
+Signed: Yehor Kaliberda
+Date: 14.07.26
 
 ## 9. Methodology Note
 
