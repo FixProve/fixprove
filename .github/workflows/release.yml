@@ -15,10 +15,12 @@
 # risk by never having a long-lived PyPI token to leak in the first place.
 # npm publishing uses npm's Trusted Publishing (OIDC, `id-token: write`,
 # GA since 2025-07-31) as of Session 4.8 -- see S4.8-NPM-OIDC-MIGRATION
-# below on the publish-npm job for the full trace. NPM_TOKEN is retained
-# as a same-run automatic fallback during the transition window (Yehor
-# decision, Session 4.8, Q3: phased rollout) -- it is NOT revoked until a
-# real tag proves the OIDC path works end-to-end.
+# below on the publish-npm job for the full trace. NODE_AUTH_TOKEN was
+# removed from the publish-npm step's env in a Session 4.8 follow-up
+# (S4.8-NPM-OIDC-CLEANUP) after v0.1.9 live-verified the OIDC path. The
+# NPM_TOKEN secret and npm's token-based publishing allowance are BOTH
+# deliberately left dormant, not revoked -- see S4.8-NPM-OIDC-CLEANUP on
+# the publish-npm job for why.
 name: Release
 
 on:
@@ -244,17 +246,39 @@ jobs:
   #   manually (Settings -> Environments -> New environment -> "npm");
   #   not automatable from here. Adding required reviewers later is a
   #   separate, deferred decision, not bundled into this change.
-  # Q3 (phased rollout): NODE_AUTH_TOKEN is deliberately NOT removed from
-  #   this step's env. npm's own docs state the CLI tries OIDC first and
-  #   automatically falls back to a supplied token in the SAME run if OIDC
-  #   fails -- so this is a live, same-run safety net, not just an
-  #   emergency git-revert fallback. NPM_TOKEN stays live on npm's side too
-  #   (no "disallow tokens" toggle) until a real tag proves OIDC actually
-  #   fired. KNOWN CONSEQUENCE: a successful publish on the verification
-  #   tag does NOT by itself prove OIDC worked -- it could have silently
-  #   fallen through to the token. Stage 3 verification must inspect the
-  #   job's own npm-publish log output for explicit evidence of the OIDC
-  #   token exchange, not just check that the package went live.
+  # Q3 (phased rollout): NODE_AUTH_TOKEN was deliberately NOT removed from
+  #   this step's env for the v0.1.9 verification run. npm's own docs state
+  #   the CLI tries OIDC first and automatically falls back to a supplied
+  #   token in the SAME run if OIDC fails -- so this was a live, same-run
+  #   safety net, not just an emergency git-revert fallback. NPM_TOKEN
+  #   stayed live on npm's side too (no "disallow tokens" toggle) until a
+  #   real tag proved OIDC actually fired. KNOWN CONSEQUENCE (materialized
+  #   and resolved): a successful publish on the verification tag did NOT
+  #   by itself prove OIDC worked -- it could have silently fallen through
+  #   to the token. Stage 3 verification inspected the LIVE REGISTRY
+  #   METADATA (registry.npmjs.org/fixprove/0.1.9's `_npmUser` field showed
+  #   "GitHub Actions" with an explicit `trustedPublisher` object, not
+  #   Yehor's own npm account), which is definitive proof OIDC fired, not
+  #   inferred from a green job status alone.
+  #   FOLLOW-UP (S4.8-NPM-OIDC-CLEANUP, same session, post-v0.1.9): the
+  #   NODE_AUTH_TOKEN env line below has now been removed. ADVERSARIAL
+  #   CATCH (Yehor + AI, pre-merge): removing the token is a DIFFERENT
+  #   configuration than "token present but unused" -- `actions/setup-node`
+  #   writes `//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}` into
+  #   .npmrc, and how npm CLI's OIDC-vs-token precedence behaves when that
+  #   variable is entirely UNSET (vs. set-but-unneeded) is NOT covered by
+  #   the v0.1.9 evidence above and is NOT documented in npm's own trusted-
+  #   publishing docs. This is a genuinely untested edge case, not a
+  #   "mathematically eliminated" risk -- treat it as such. DECISION
+  #   (Yehor-approved): do not force a throwaway version bump solely to
+  #   test a CI-only config change (no version bump needed since no
+  #   package code changed). Instead: NPM_TOKEN secret and npm's token-
+  #   publishing allowance are BOTH kept dormant (not revoked, not
+  #   disallowed) as a manual (not same-run) recovery path until the NEXT
+  #   NATURAL release proves the token-free config live. Only then should
+  #   the secret be revoked and npm's "disallow tokens" be enabled --
+  #   Stage 3 on that future release must re-verify via the same live-
+  #   registry-metadata method used for v0.1.9, not a green status alone.
   # Q4 (live verification): a real `v0.1.9` tag is pushed this session to
   #   verify the OIDC handshake live, per Yehor's explicit instruction --
   #   npm does not validate trusted-publisher config at save time, so this
@@ -325,11 +349,18 @@ jobs:
       # explicit (not relying on OIDC's "automatic" provenance claim --
       # see module-level KS-TRACE: a real-world account found the
       # automatic-provenance claim did not hold reliably in practice).
-      # NODE_AUTH_TOKEN is deliberately still passed -- see module-level
-      # KS-TRACE (Q3) for why this is a live same-run fallback, not dead
-      # code to clean up.
+      #
+      # #KS-TRACE: S4.8-NPM-OIDC-CLEANUP | requirement: remove the
+      # NODE_AUTH_TOKEN env fallback now that v0.1.9 live-verified OIDC via
+      # registry metadata (see Q3 above for the exact evidence and for the
+      # adversarial catch on why this removal is a genuinely new, untested
+      # configuration, not a formality). NPM_TOKEN secret and npm's token-
+      # publishing allowance remain live but unreferenced here -- dormant
+      # manual rollback, not same-run fallback -- until the next natural
+      # release proves this exact token-free step. | test: the NEXT real
+      # tag push (whatever version that naturally is) must succeed AND
+      # show the same `_npmUser.trustedPublisher` evidence pattern used to
+      # verify v0.1.9 -- a green job status alone is not sufficient proof.
       - name: Publish to npm
         working-directory: cli
         run: npm publish --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
