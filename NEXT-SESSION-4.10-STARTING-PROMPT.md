@@ -29,14 +29,17 @@ a version bump on disk; always re-verify with `--version` after install.
 
 **Live state:**
 
-- GitHub: `FixProve/fixprove` `main` at `3152be8` (pushed and confirmed
-  this session — verify with `git log -1 --oneline` before trusting this,
-  same discipline as always). Note: this push bypassed the branch
-  protection rule requiring a PR + 2 status checks (GitHub reported
-  "Bypassed rule violations"), almost certainly because Yehor has
-  admin/owner bypass rights on the ruleset. `ci.yml` also triggers on
-  direct pushes to `main`, so it should still have run against
-  `3152be8` — worth a quick look at the Actions tab to confirm it went
+- GitHub: `FixProve/fixprove` `main` at `97a7ab7` (two direct pushes this
+  session — `3152be8` for the code/report changes, `97a7ab7` for the
+  closing addendum recording the live-deploy proof — verify with
+  `git log -1 --oneline` before trusting this, same discipline as
+  always; this line itself was written before the second commit existed,
+  the exact self-reference trap Session 4.8 hit too). Note: both pushes
+  bypassed the branch protection rule requiring a PR + 2 status checks
+  (GitHub reported "Bypassed rule violations"), almost certainly because
+  Yehor has admin/owner bypass rights on the ruleset. `ci.yml` also
+  triggers on direct pushes to `main`, so it should still have run against
+  both — worth a quick look at the Actions tab to confirm they went
   green, since this specific commit didn't go through the usual
   PR-gated path prior sessions used.
 - GitHub App `fixprove`: Contents permission confirmed live as "No
@@ -182,6 +185,13 @@ a version bump on disk; always re-verify with `--version` after install.
   (`mv .git/index.lock .git/index.lock.<anything>` — rename works,
   delete doesn't). Do this check first, and do one final rename-away pass
   at the end of the session.
+- **If `git status` from the sandbox ever shows a null-sha1 error or a
+  file staged for deletion (`D `) that's also untracked (`??`) at the
+  same path, that's index corruption, not a real change.** Verify the
+  real file content via `Read` before believing it, and never run a git
+  write command against a corrupted index — trust Yehor's own machine's
+  `git status` instead. Hit once this session on `worker/wrangler.toml`
+  (confirmed a false alarm); see `feedback_fixprove_mount_write_quirks`.
 
 ## Immediate next action
 
@@ -190,6 +200,6 @@ carried-forward items (above) to pick up next — none of them is
 time-sensitive except item #1 (npm token verification), which rides
 passively until a natural release happens for some other reason. It's
 also worth a quick, low-effort check of the GitHub Actions tab to confirm
-`ci.yml` ran clean on commit `3152be8` (the direct-push-bypassed-PR note
-above), just to close that loop even though it's not expected to be a
-problem.
+`ci.yml` ran clean on both `3152be8` and `97a7ab7` (the
+direct-push-bypassed-PR note above), just to close that loop even though
+it's not expected to be a problem.
