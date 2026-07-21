@@ -75,7 +75,7 @@ The original synthesis used "Symbolguard." A live check killed it and confirmed 
 | Trademark (Class 9/42) | conflicts with SymbolGuard™ | no conflict surfaced; **formal USPTO/EUIPO filing still required in Session 0.2** |
 
 **Near-names to be aware of (documented, NOT blocking):**
-- **BugProve** (firmware security analysis, bugprove.com) — different name, different niche, phonetically adjacent. No collision; just know it exists.
+- [Comparison mark name redacted from public view, 2026-07-21, Session 4.12-B — see `MEMORY/critical-actions.md`] — different niche, phonetically adjacent. No collision; just know it exists.
 - **Fix Price** (Russia/CIS retail variety-store chain) — different name, retail trademark class (≈35), not software. No collision; it is what Google autocorrects "fixprove" to, which actually *helps* (the term is unclaimed in software).
 
 **VERDICT: GO on FixProve.** Backup name (unverified — would need the same live sweep): `Importproof`.
@@ -199,8 +199,9 @@ Goal: file the FixProve trademark, open Stripe, scaffold the monorepo.
 Acceptance criteria:
  - USPTO TEAS application drafted for "FixProve" Class 9 (downloadable software) +
    Class 42 (SaaS): produce the exact goods/services description text for me to paste.
-   Note in the filing notes: unrelated marks "Fix Price" (retail, Class 35) and "BugProve"
-   (firmware security) exist but are non-conflicting — record this due-diligence.
+   Note in the filing notes: unrelated marks "Fix Price" (retail, Class 35) and a second
+   comparison mark (name redacted from public view, 2026-07-21) exist but are
+   non-conflicting — record this due-diligence.
  - Stripe account checklist produced.
  - Monorepo scaffold: /cli (open-core), /app (GitHub App), /web (landing), CI config,
    plus LICENSE (MIT for /cli), CONTRIBUTING, SECURITY.md.

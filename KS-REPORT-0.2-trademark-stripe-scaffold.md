@@ -6,6 +6,13 @@
 scaffold the monorepo (`/cli`, `/app`, `/web`), and prove the scaffold builds green in CI
 before session close.
 
+**Editorial note (2026-07-21, Session 4.12-B):** two references to a specific comparison
+mark and its risk assessment in §4 and §5 below were redacted from public view as a
+documented, one-time exception to this project's append-only convention for Keystone
+Reports — justified because this report's own §5 Accountability Statement was never
+signed (no attestation exists for this edit to alter). See `MEMORY/critical-actions.md`,
+CA-4 entry dated 2026-07-21, for the full justification and scope of this exception.
+
 ---
 
 ## 1. Provenance
@@ -16,9 +23,10 @@ code exists yet in `/cli`, `/app`, or `/web`. Specifically:
 - **Trademark text** (`TRADEMARK-FILING-NOTES.md`): AI-drafted from the product description
   in `FIXPROVE_MASTER_BUILD_PLAN.md` §1.1/§3, written close to USPTO ID Manual style.
   **Not attorney-reviewed** — flagged explicitly in the document itself.
-- **Due-diligence search** on "Fix Price" and "BugProve": AI-executed via general web
-  search (not USPTO TESS/TSDR, not an attorney clearance search). Results are recorded as
-  what they are — a web-search-level check — not oversold as a formal clearance opinion.
+- **Due-diligence search** on "Fix Price" and a second comparison mark: AI-executed via
+  general web search (not USPTO TESS/TSDR, not an attorney clearance search). Results are
+  recorded as what they are — a web-search-level check — not oversold as a formal
+  clearance opinion.
 - **Stripe checklist** (`STRIPE-SETUP-CHECKLIST.md`): AI-drafted from Stripe's publicly
   documented onboarding flow + the billing model already specified in the master build plan
   (flat per-repo pricing, GitHub App entitlement gating, Session 2.3 scope). No Stripe
@@ -84,8 +92,10 @@ and D1–D4 are what that attack surfaced.
 
 - **The trademark text is unreviewed by counsel.** It is drafted to be filing-ready in form,
   not guaranteed to be accepted by a USPTO examiner without amendment, and not a substitute
-  for a real clearance search (see `TRADEMARK-FILING-NOTES.md` §3 for the honest read on the
-  BugProve comparison specifically — flagged as low-to-moderate risk, not zero).
+  for a real clearance search (see `TRADEMARK-FILING-NOTES.md` §3 for the near-name
+  due-diligence findings — comparison-mark name and detailed assessment redacted from public
+  view 2026-07-21, Session 4.12-B; net assessment retained internally as not guaranteed
+  non-conflicting).
 - **No Stripe account exists.** The checklist is unexecuted; several items (legal entity
   choice, statement descriptor, tax registration) require decisions only Yehor can make.
 - **`/web`'s `test` script is a placeholder echo, not a real test.** Turbo reports it as
@@ -111,9 +121,10 @@ and D1–D4 are what that attack surfaced.
 > I, Yehor Kaliberda, have reviewed this Keystone Report for Session 0.2. I confirm that:
 > - I understand the trademark text is unreviewed by counsel and requires my (or my
 >   attorney's) edit pass before TEAS filing.
-> - I understand the BugProve comparison was flagged as low-to-moderate risk, not
->   guaranteed non-conflicting, and a real TESS/attorney clearance search is recommended
->   before I file.
+> - I understand the near-name due-diligence comparison recorded in
+>   `TRADEMARK-FILING-NOTES.md` §3 (comparison-mark name redacted from this public copy,
+>   2026-07-21) was flagged as not guaranteed non-conflicting, and a real TESS/attorney
+>   clearance search is recommended before I file.
 > - I have not yet opened a Stripe account; the checklist is guidance, not a completed
 >   action.
 > - I accept the monorepo scaffold as reviewed, understanding it contains no product logic

@@ -1,8 +1,9 @@
 # Stripe Account Setup Checklist — FixProve
 **Prepared:** 2026-07-01, Session 0.2
-**Business model reminder (from master build plan):** flat per-repo/org subscription
-($29/mo solo, $99/mo team), BYOK for any optional LLM-suggestion feature, billed via Stripe
-tied to a GitHub App install/entitlement (Session 2.3 builds the actual integration).
+**Business model reminder:** [pricing tiers and subscription-structure details — moved to
+internal docs, redacted 2026-07-21, Session 4.12-B], BYOK for any optional LLM-suggestion
+feature, billed via Stripe tied to a GitHub App install/entitlement (Session 2.3 builds the
+actual integration).
 
 This is a checklist only — no Stripe account was created and no funds/entitlements were
 touched in this session. Opening the account and providing legal/financial identity details
@@ -36,8 +37,8 @@ is a step only Yehor can execute.
       dependency on the `/web` package.
 
 ## 3. Product/billing configuration (ahead of Session 2.3 integration)
-- [ ] Decide subscription structure in Stripe: two Prices under one Product ("FixProve"),
-      e.g. `price_solo_29_monthly` and `price_team_99_monthly`, or two separate Products —
+- [ ] Decide subscription structure in Stripe: [specific tier names/pricing and price-ID
+      naming convention — moved to internal docs, redacted 2026-07-21, Session 4.12-B] —
       pick one convention now so Session 2.3 doesn't have to guess.
 - [ ] Enable **Stripe Billing** (subscriptions) — required for recurring per-repo/org
       pricing.

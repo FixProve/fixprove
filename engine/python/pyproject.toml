@@ -99,7 +99,23 @@ Homepage = "https://fixprove.dev"
 # KS-TRACE comment above and the README, not the PyPI label itself | test:
 # real GitHub Actions run (v0.1.4 tag) -- this class of defect can only be
 # caught by a live PyPI upload, not local build/inspect checks.
-"GitHub App (paid CI)" = "https://fixprove.dev/app"
+#
+# #KS-TRACE: S4.12B-E2-PYPI-LABEL-PAID-REMOVED | requirement: E-2 (decided
+# 2026-07-21, Session 4.12-A decision phase) -- the "(paid CI)" label
+# implies a paid feature/pricing claim, but Stripe completion and any
+# pricing publication are still BLOCKED PENDING LEGAL COUNSEL (see
+# MEMORY/critical-actions.md, 2026-07-17 entry) -- the word "paid" here is
+# effectively an unsanctioned pricing-adjacent public claim, the same
+# category of exposure as this session's STRIPE-SETUP-CHECKLIST.md/
+# TRADEMARK-FILING-NOTES.md redactions. Fixed by removing "paid" from the
+# label. | assumption: "GitHub App (CI)" still accurately describes the
+# linked page (the GitHub App used for CI checks) without the pricing
+# claim | test: this label change propagates to PyPI on the NEXT publish
+# (new version tag/upload), not retroactively -- the currently-live PyPI
+# page keeps the old "(paid CI)" label until then. No local test can
+# verify a live PyPI metadata label rendering; confirm on the next real
+# publish.
+"GitHub App (CI)" = "https://fixprove.dev/app"
 Repository = "https://github.com/FixProve/fixprove"
 
 # KS-TRACE: S3.1-CONSOLE-SCRIPT | requirement: "TS CLI wrapper ... correctly
