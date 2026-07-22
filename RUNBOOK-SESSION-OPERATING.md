@@ -1,6 +1,7 @@
 # FixProve — Session Operating Runbook
 
-Version 1.0 — 2026-07-21
+Version 1.0 — 2026-07-21 (§4 updated 2026-07-22: two gotchas added — AI
+sandbox push limitation, one-writer-at-a-time on the mount)
 Purpose: turn the Keystone Operating Constitution (v1.1.0) into literal, copy-paste
 blocks so every session — yours or Claude's — starts and ends the same rigorous way,
 with no re-deriving of process each time.
@@ -165,6 +166,17 @@ runs a session, so they don't get rediscovered the hard way:
   "final," do a full read-through, not just the sections that were edited.
 - **RepoMend vs FixProve** — same owner, different product/branding. Don't
   conflate them in any report or public-facing text.
+- **`git push` cannot run from this AI sandbox** — `device_bash` has no
+  outbound network access to GitHub (confirmed via a literal failed
+  attempt: `403 from proxy after CONNECT`). Every push is handed to Yehor
+  as a literal copy-paste command for his own machine; never retry it
+  from here.
+- **ONE WRITER AT A TIME on the FixProve mount** — other Cowork projects
+  (e.g. the business-registration/tax project) also write to files on
+  this same mount. Always run `git status`/`git diff` against your last
+  known commit before assuming the working tree still matches it; a
+  divergence isn't necessarily corruption, but it needs to be reconciled,
+  not assumed away.
 
 ---
 
