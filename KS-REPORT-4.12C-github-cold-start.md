@@ -149,3 +149,50 @@ hidden error/conflict templates in the DOM at all times, and reading them
 as if they were live produces false failure signals (defect #5). Both are
 candidates for `MEMORY/state.md`'s heuristics if they recur in a future
 session.
+
+## Addendum (2026-07-22, post-push close)
+
+This report was committed as `724e71c` and pushed to `origin/main` with
+§5 reading "PENDING." A same-day, uncommitted local edit to this file
+changed §5's signature line directly to "Yehor Kaliberda Date: 22.07.26"
+— that edit was reverted before this addendum was added, because once a
+KS-REPORT has been pushed, correcting it in place (rather than via a
+dated addendum) would break the append-only convention this project
+relies on for its own audit trail. The underlying fact is preserved here
+instead:
+
+1. **§5 status:** Yehor signed this report 2026-07-22. The header's
+   "PENDING" line above (line 4) and §5's signature line are therefore
+   both superseded by this addendum as of this date — the report is now
+   ATTESTED. Per convention, neither line is edited in place; this
+   addendum is the record of the change.
+2. **§2's commit table** ends at `14f28fa` and states the four commits
+   were "NOT pushed" — that was accurate when written, since this
+   report's own commit hash cannot describe itself. Final state, verified
+   this addendum: HEAD is `724e71c` (this report's own commit, one more
+   than the table lists), pushed, `origin/main` identical (`git
+   rev-list --left-right --count origin/main...HEAD` = `0  0`, both refs
+   the same 40-char SHA).
+3. **§4's "README/badge live-render unverified — push-dependent gap"**
+   is CLOSED. Verified anonymously post-push: raw `README.md` off `main`
+   has no "Session 0.2"/scaffold language, the badge row markup is
+   present, the Install section is present, and the master-plan link is
+   correctly absent. All 5 badge images independently confirmed to
+   render on the live rendered page (`naturalWidth > 0` for each,
+   including the 4 served through GitHub's camo proxy) — an image
+   `fetch()`/`Image()` load test run directly against `img.shields.io`
+   from the `github.com` origin gave false "error" results for 4 of the
+   5 badges (cross-origin resource policy on that specific request path,
+   not a real failure); confirmed false by loading each shields.io URL
+   directly as its own page (all rendered) and by reading `naturalWidth`
+   off the actual `<img>` elements in the live rendered README (all
+   nonzero). Recorded here as a specific example of a verification
+   method producing a false negative, distinct from defect #5's false
+   positive — worth carrying into `MEMORY/state.md`'s methodology notes
+   alongside it.
+4. **CA-5 post-push per-job CI check:** re-confirmed independently via
+   an anonymous fetch of the GitHub check-runs API for `724e71c` —
+   `build` and `test-python` both `completed`/`success`.
+
+No new CA-class decision occurred in producing this addendum; it is a
+record-consistency correction only.
