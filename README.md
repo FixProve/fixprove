@@ -42,8 +42,7 @@ See [NOTICE.md](./NOTICE.md) for the per-package licensing breakdown,
 
 The CLI (`/cli` + the Python resolver engine) is published and live on npm
 and PyPI. The GitHub App (`/app`) runs the same deterministic check as a
-blocking status on pull requests. See `FIXPROVE_MASTER_BUILD_PLAN.md` for
-the full roadmap.
+blocking status on pull requests.
 
 ## Build
 

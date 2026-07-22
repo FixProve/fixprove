@@ -55,3 +55,12 @@ web/next-env.d.ts
 # That is a separate, deliberate decision, not made this session -- see
 # MEMORY/critical-actions.md, 2026-07-21 entry.
 MEMORY/
+
+# Live internal progress dashboard -- Q1 decision, 2026-07-21 (see
+# MEMORY/critical-actions.md): this file catalogues current weaknesses
+# (MRR, paying-org count, every milestone's PAUSED/MISSING status) in one
+# place and was never tracked at HEAD (git ls-files confirmed empty), so
+# this is a clean gitignore with no history to split. A separate curated
+# public-status document may be published later if a public progress
+# signal is wanted; this raw dashboard stays internal-only.
+PROGRESS.md
