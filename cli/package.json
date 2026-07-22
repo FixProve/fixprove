@@ -2,6 +2,8 @@
   "name": "fixprove",
   "version": "0.1.9",
   "description": "FixProve CLI (open-core) - deterministic AST-level verification that AI-generated code references real, installed symbols.",
+  "keywords": ["ai", "hallucination", "static-analysis", "ci", "linter"],
+  "author": "Yehor Kaliberda",
   "license": "MIT",
   "type": "module",
   "bin": {

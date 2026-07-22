@@ -1,18 +1,17 @@
 # Contributing to FixProve
 
 Thanks for your interest in FixProve. Right now the project has one primary
-maintainer (Yehor Kaliberda) and is in early build (Milestone 0/1 of the
-master build plan). This document will expand as the open-core `/cli`
-package stabilizes and accepts outside contributions (targeted at
-Session 3.1, public npm/PyPI launch).
+maintainer (Yehor Kaliberda). The open-core `/cli` package (plus the Python
+resolver engine it wraps) is published and live on npm and PyPI. This
+document will expand as outside contributions start coming in.
 
 ## Scope of contributions
 
 - **`/cli`** is open-core (MIT) and is the intended surface for community
-  contributions once published.
+  contributions.
 - **`/app`** and **`/web`** are proprietary and not open to outside PRs.
 
-## Before you open a PR (once public)
+## Before you open a PR
 
 1. Open an issue describing the bug or proposal first for anything
    non-trivial.
