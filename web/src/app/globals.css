@@ -67,8 +67,33 @@ h1 {
   overflow-x: auto;
 }
 
+.example.install {
+  color: var(--fg);
+  margin-bottom: 16px;
+}
+
 .example .fail {
   color: var(--danger);
+}
+
+.cta-note {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 0 0 12px;
+}
+
+.cta-note code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+.cta-note.muted {
+  margin-bottom: 40px;
 }
 
 section h2 {
@@ -79,6 +104,23 @@ section h2 {
 section p {
   color: var(--muted);
   line-height: 1.6;
+}
+
+section.updates {
+  margin-top: 56px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border);
+}
+
+section.updates h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 8px;
+  color: var(--muted);
+}
+
+section.updates p {
+  font-size: 14px;
 }
 
 form.waitlist {
@@ -117,6 +159,20 @@ form.waitlist button {
 form.waitlist button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+form.waitlist.compact {
+  margin-top: 14px;
+}
+
+form.waitlist.compact input[type="email"] {
+  padding: 10px 14px;
+  font-size: 14px;
+}
+
+form.waitlist.compact button {
+  padding: 10px 16px;
+  font-size: 14px;
 }
 
 .form-message {

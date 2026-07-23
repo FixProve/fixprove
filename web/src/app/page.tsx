@@ -1,13 +1,27 @@
 "use client";
 
-// #KS-TRACE: SESSION-0.3 | requirement: "Page live with the one-sentence value
-// prop, the problem, and a working email waitlist" | assumption: a single-page,
-// no-router landing page is sufficient for a Milestone 0 capture surface (no
-// pricing, docs, or nav yet - those come with the real product in later
-// milestones) | test: manual verification against the deployed URL post-deploy
-// (see Keystone Report §2), plus the client-side mirror of the adversarial
-// malformed-email case (server-side is the source of truth; see
-// functions/api/_validate.ts + validate.test.ts).
+// #KS-TRACE: SESSION-4.12-D | requirement: "replace the waitlist/coming-soon
+// hero and CTA with the live install commands, mirroring the README's
+// Install section" | assumption: the CLI has been live on npm/PyPI since
+// v0.1.1, so "coming soon" framing is now false and actively costs
+// cold-visitor conversion (see COVER-FIX-STRATEGY.md) | test: manual
+// verification against the deployed URL post-deploy; anonymous-fetch
+// done-checks in NEXT-SESSION-4.12-D-STARTING-PROMPT.md.
+//
+// Compliance notes (Yehor, 2026-07-23, this session):
+// - Dropped an unverified "ninety milliseconds" performance claim that had
+//   no benchmark anywhere in the repo (same overclaim class the Keystone
+//   constitution forbids).
+// - The GitHub App line was verified against a live check-runs API call for
+//   commit 724e71c: only `build`/`test-python` (github-actions) appear, no
+//   FixProve App check-run, and every push to date has been direct-to-main
+//   with zero PRs, so a PR-triggered App check has never had the
+//   opportunity to fire. The line below states only what's independently
+//   verifiable, not what would be convenient to imply.
+// - The waitlist form is kept (per Yehor: it's a tracked external-signal
+//   channel on PROGRESS.md, currently at zero) but demoted below the fold
+//   with honest framing — it now advertises "updates," not "early access
+//   to a CLI that already shipped."
 
 import { useState, type FormEvent } from "react";
 
@@ -49,11 +63,27 @@ export default function Home() {
   return (
     <main>
       <div className="eyebrow">FixProve</div>
-      <h1>Prove your AI-generated code before it merges.</h1>
+      <h1>Prove your code. Don&apos;t hope it.</h1>
       <p className="subhead">
-        Deterministic verification that every import, symbol, method, and API
-        call in an AI-generated diff actually resolves against what&apos;s
-        installed in your project — in CI, with zero LLM tokens.
+        FixProve checks every import, every call, every attribute your AI
+        wrote — against what&apos;s actually installed. Deterministically. No
+        model in the loop.
+      </p>
+
+      <div className="example install">
+        <div>$ pip install fixprove</div>
+        <div>$ npm install -g fixprove</div>
+        <div>$ fixprove check /path/to/your/project</div>
+      </div>
+      <p className="cta-note">
+        One command. Read the source. See exactly what it checks. The npm
+        package wraps the Python resolver engine — install both, or{" "}
+        <code>pip install fixprove</code> alone if you don&apos;t need the
+        npm entrypoint.
+      </p>
+      <p className="cta-note muted">
+        The GitHub App runs the same check as a blocking status on pull
+        requests. Not yet open for third-party installation.
       </p>
 
       <section>
@@ -83,13 +113,13 @@ export default function Home() {
         </p>
       </section>
 
-      <section>
-        <h2>Get early access</h2>
+      <section className="updates">
+        <h2>Stay in the loop</h2>
         <p>
-          FixProve is in active development. Join the waitlist and we&apos;ll
-          reach out when the CLI and GitHub App are ready.
+          Want updates on the GitHub App&apos;s wider release and what ships
+          next? Leave your email — no spam, just launch news.
         </p>
-        <form className="waitlist" onSubmit={handleSubmit} noValidate>
+        <form className="waitlist compact" onSubmit={handleSubmit} noValidate>
           <input
             type="email"
             required
@@ -100,7 +130,7 @@ export default function Home() {
             aria-label="Email address"
           />
           <button type="submit" disabled={status === "submitting"}>
-            {status === "submitting" ? "Joining…" : "Join the waitlist"}
+            {status === "submitting" ? "Joining…" : "Notify me"}
           </button>
         </form>
         {message && (
