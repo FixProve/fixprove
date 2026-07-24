@@ -177,6 +177,25 @@ runs a session, so they don't get rediscovered the hard way:
   known commit before assuming the working tree still matches it; a
   divergence isn't necessarily corruption, but it needs to be reconciled,
   not assumed away.
+- **Signature status must be freshly read, never asserted from memory.**
+  Before stating whether a KS-Report is signed in any close-out summary,
+  run `grep -n "Signature" <file>` (and check for a `## Signed:` heading
+  variant too — not every report uses the same exact phrasing) against
+  the file on disk, right then. Do not report signature status from what
+  an earlier point in this session wrote — Yehor may have signed on the
+  mount in between, and reporting stale status produced a false
+  "PENDING" in three consecutive session summaries (4.12-C, 4.12-D,
+  4.12-E) before this was traced back to a state-tracking lag rather
+  than any actual governance problem. The executioner never writes
+  Yehor's name or a date into a signature line under any circumstance —
+  that line is always his to fill in, not this session's to fill in on
+  his behalf, verified or not.
+- **Sign last, where practical.** If a report gets a new section
+  appended after Yehor has already signed it (e.g. a live-verification
+  addendum written after the original attestation), the appending pass
+  states plainly, in the new section, what the existing signature
+  covered — the attestation predates the addition and shouldn't be read
+  as covering content that didn't exist yet.
 
 ---
 
