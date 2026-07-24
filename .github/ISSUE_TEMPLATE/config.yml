@@ -1,0 +1,6 @@
+# KS-TRACE: 4.12E-ISSUE-CONFIG | assumption: blank issues push reporters toward the two templates above | test: live check — issues/new/choose shows chooser, not a blank-form option
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability report
+    url: https://github.com/FixProve/fixprove/blob/main/SECURITY.md
+    about: Please report security vulnerabilities privately per SECURITY.md — do not open a public issue for these.
