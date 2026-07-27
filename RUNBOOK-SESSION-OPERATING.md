@@ -232,6 +232,24 @@ runs a session, so they don't get rediscovered the hard way:
   is visible to maintainers rather than private), prefer handing the
   step to Yehor over retrying automation — the blast radius of a glitch
   is worse in front of other people's eyes than on FixProve's own mount.
+- **Text copied from a rendered markdown view can silently lose blank-line
+  spacing.** When a user pastes file content back for review (e.g. "make
+  this ready to copy and paste"), a copy taken from a rendered/preview
+  view can collapse the blank lines that separate list items in the raw
+  source, even though the rendered view looks identical either way.
+  Confirmed 2026-07-27 (Session 4.12-F, same `pypsa-earth` release-notes
+  edit): a pasted-back copy of the file was missing every blank line the
+  real raw source had. Using that pasted version as the basis for a
+  "select all, paste this over the whole file" replacement would have
+  silently stripped spacing across the entire (~500-line) document — a
+  much larger, unintended change than the one line actually wanted, and
+  a bad look landing in someone else's public repo. **Standing practice:**
+  never treat a user-pasted copy of an existing file as authoritative for
+  a full-file replacement — fetch the real current source fresh (raw file
+  read, not a rendered view) and diff mentally against what was pasted
+  before deciding how to apply a change. Prefer a small, targeted insert
+  against the verified real source over any "replace everything" action,
+  especially on a file this session doesn't own.
 
 ---
 
