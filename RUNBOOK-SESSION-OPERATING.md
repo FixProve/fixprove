@@ -196,6 +196,21 @@ runs a session, so they don't get rediscovered the hard way:
   states plainly, in the new section, what the existing signature
   covered — the attestation predates the addition and shouldn't be read
   as covering content that didn't exist yet.
+- **Email + external-account actions: draft only, never send/post.** The
+  executor may have connected email or a browser bridge to other
+  in-name channels (GitHub PR comments, issue replies, social) at times.
+  Composing into email Drafts, or preparing exact text for a GitHub
+  comment, is fine and useful. Actually **sending** an email or
+  **posting** a comment in Yehor's name is a CA-3 action (publishing/
+  posting in his name) — always his to execute, or his explicit
+  per-instance approval, exactly like `git push` and `wrangler deploy`.
+  A reversible edit on Yehor's own resource (e.g. a commit to his own
+  PR branch) may be done on his explicit per-instance go-ahead; an
+  irreversible in-name broadcast (send, post) is never the executor's
+  to trigger on its own initiative. "The tool can send" is never "the
+  tool may send." (Set 2026-07-27, Session 4.12-F, after email access
+  was connected mid-session — see the same-day dated entry in
+  `MEMORY/critical-actions.md`.)
 
 ---
 
