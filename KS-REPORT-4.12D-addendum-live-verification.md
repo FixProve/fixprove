@@ -76,7 +76,7 @@ Milestone-3 artifact A (`fixprove.dev`) is now fully LIVE and matches the
 starting prompt's must-close list and every falsifiable done-check,
 verified against the real production site, same day as the build.
 
-## Signature status
+## Signed: Yehor Kaliberda 23.07.26
 
 `KS-REPORT-4.12D-fixprove-dev-reality-sync.md`'s own §5 Accountability
 Statement is still recorded as PENDING in that file (append-only —

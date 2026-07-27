@@ -207,7 +207,7 @@ publication (§3, defects 1-2); one of those two was caught by Yehor's own
 independent verification, not this session's own first pass — logged
 honestly rather than claimed as a unilateral catch.
 
-Signature: **PENDING — Yehor.**
+Signature: **Yehor Kaliberda 23.07.26**
 
 ## 6. Methodology notes (candidates for future heuristic promotion)
 
