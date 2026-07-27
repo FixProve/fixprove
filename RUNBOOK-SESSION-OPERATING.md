@@ -211,6 +211,27 @@ runs a session, so they don't get rediscovered the hard way:
   tool may send." (Set 2026-07-27, Session 4.12-F, after email access
   was connected mid-session — see the same-day dated entry in
   `MEMORY/critical-actions.md`.)
+- **Browser-bridge coordinate clicks can misfire in rich text/code
+  editors.** A click intended to land inside a CodeMirror/rich-text field
+  (e.g. GitHub's web file editor) can miss the actual input area even
+  when the coordinates looked right in a screenshot. When that happens,
+  the following keystrokes don't vanish safely — GitHub's own global
+  keyboard shortcuts (e.g. the `s`/`/` search shortcut) capture them and
+  can trigger an unintended action, such as submitting a code-search
+  query. Confirmed once, 2026-07-27 (Session 4.12-F, `pypsa-earth` PR
+  #1915 release-notes edit): the misfire was low-consequence and fully
+  recoverable — an uncommitted GitHub web edit evaporates on reload, and
+  the only side effect was one harmless search query — but the pattern
+  is worth naming so it isn't rediscovered as a new mystery next time.
+  **Standing practice:** before typing into any rich text/code editor via
+  the browser bridge, screenshot-confirm the cursor is genuinely inside
+  the target field (a visible cursor caret, selection highlight, or
+  focus ring), not just trust that the click coordinates matched a
+  screenshot region. For delicate edits on a repo that isn't this
+  project's own (e.g. someone else's open-source repo, where a misfire
+  is visible to maintainers rather than private), prefer handing the
+  step to Yehor over retrying automation — the blast radius of a glitch
+  is worse in front of other people's eyes than on FixProve's own mount.
 
 ---
 
