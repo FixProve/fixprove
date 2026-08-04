@@ -34,6 +34,15 @@ importers:
         specifier: ^5.6.3
         version: 5.9.3
 
+  billing:
+    devDependencies:
+      '@types/node':
+        specifier: ^20.16.11
+        version: 20.19.43
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+
   cli:
     dependencies:
       commander:

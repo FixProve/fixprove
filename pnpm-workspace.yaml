@@ -1,5 +1,6 @@
 packages:
   - "cli"
   - "app"
+  - "billing"
   - "web"
   - "worker"

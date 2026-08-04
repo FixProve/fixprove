@@ -1,0 +1,159 @@
+# #KS-TRACE: B1-CI-STRIPE-LISTEN | requirement: SESSION-PLAN-TO-R1.md B1 --
+# "add `stripe listen` to CI so webhook handling is regression-tested".
+#
+# HONEST SCOPE NOTE, read this before trusting the job name. The offline unit
+# suite (`billing` in ci.yml) is what actually gates every push: 40 tests,
+# no network, no account, covering all six lifecycle scenarios plus the
+# adversarial signature/idempotency/ordering cases. THIS workflow is the
+# second half -- the one that proves our hand-built event fixtures match the
+# shapes Stripe really emits. It CANNOT run until Yehor has created the
+# test-mode Stripe account and added the two repository secrets below, so it
+# is deliberately `workflow_dispatch` only: a job that silently skips on every
+# push would read as green coverage that does not exist.
+#
+# MUST NOT: this workflow is TEST MODE ONLY. STRIPE_TEST_SECRET_KEY must be an
+# `sk_test_`/`rk_test_` key -- the billing module refuses anything else at
+# construction time (see billing/src/checkout.ts assertTestModeKey), so a live
+# key pasted here fails loudly rather than charging a real card.
+
+name: Billing — Stripe test-mode E2E
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Why this run (e.g. 'post-account-creation first verification')"
+        required: false
+        default: "manual verification"
+
+jobs:
+  stripe-e2e:
+    runs-on: ubuntu-latest
+    # Guarded so a fork or a secret-less repo fails fast with a clear message
+    # rather than leaking a confusing Stripe CLI auth error.
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fail fast if the test-mode key is absent or not a test key
+        env:
+          STRIPE_TEST_SECRET_KEY: ${{ secrets.STRIPE_TEST_SECRET_KEY }}
+        run: |
+          set -e
+          if [ -z "$STRIPE_TEST_SECRET_KEY" ]; then
+            echo "::error::STRIPE_TEST_SECRET_KEY is not set."
+            echo "See BILLING-ACTIVATION.md section 3. This job is expected to fail until"
+            echo "the test-mode Stripe account exists. The offline suite in ci.yml is unaffected."
+            exit 1
+          fi
+          case "$STRIPE_TEST_SECRET_KEY" in
+            sk_test_*|rk_test_*) : ;;
+            *) echo "::error::Refusing to run: STRIPE_TEST_SECRET_KEY is not a test-mode key."; exit 1 ;;
+          esac
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build billing package
+        run: pnpm --filter @fixprove/billing build
+
+      - name: Install Stripe CLI
+        run: |
+          set -e
+          curl -fsSL https://github.com/stripe/stripe-cli/releases/download/v1.21.8/stripe_1.21.8_linux_x86_64.tar.gz \
+            -o /tmp/stripe.tar.gz
+          tar -xzf /tmp/stripe.tar.gz -C /tmp
+          sudo mv /tmp/stripe /usr/local/bin/stripe
+          stripe version
+
+      # #KS-TRACE: B1-CLI-SECRET | `stripe listen` signs forwarded events with
+      # its OWN generated signing secret, which is NOT the dashboard endpoint
+      # secret. Using the wrong one is the classic "everything 400s" failure,
+      # so the secret is read from the CLI itself rather than from a repo
+      # secret that would silently be the wrong value.
+      - name: Start the receiver with the CLI's own signing secret
+        env:
+          STRIPE_API_KEY: ${{ secrets.STRIPE_TEST_SECRET_KEY }}
+          STRIPE_TEST_SECRET_KEY: ${{ secrets.STRIPE_TEST_SECRET_KEY }}
+        run: |
+          set -e
+          CLI_SECRET="$(stripe listen --print-secret)"
+          case "$CLI_SECRET" in
+            whsec_*) : ;;
+            *) echo "::error::stripe listen --print-secret did not return a whsec_ value"; exit 1 ;;
+          esac
+          echo "::add-mask::$CLI_SECRET"
+          STRIPE_TEST_WEBHOOK_SECRET="$CLI_SECRET" \
+            node billing/scripts/devReceiver.mjs > /tmp/receiver.log 2>&1 &
+          echo $! > /tmp/receiver.pid
+          for i in $(seq 1 20); do
+            curl -sf http://127.0.0.1:8787/healthz && break || sleep 0.5
+          done
+          curl -sf http://127.0.0.1:8787/healthz
+
+      - name: Forward Stripe test events to the receiver
+        env:
+          STRIPE_API_KEY: ${{ secrets.STRIPE_TEST_SECRET_KEY }}
+        run: |
+          stripe listen --forward-to http://127.0.0.1:8787/stripe/webhook \
+            > /tmp/listen.log 2>&1 &
+          echo $! > /tmp/listen.pid
+          sleep 5
+
+      - name: Trigger the lifecycle events
+        env:
+          STRIPE_API_KEY: ${{ secrets.STRIPE_TEST_SECRET_KEY }}
+        run: |
+          set -e
+          for ev in \
+            checkout.session.completed \
+            customer.subscription.created \
+            customer.subscription.updated \
+            customer.subscription.deleted \
+            invoice.payment_succeeded \
+            invoice.payment_failed
+          do
+            echo "--- triggering $ev ---"
+            stripe trigger "$ev"
+            sleep 3
+          done
+
+      - name: Assert every event was accepted and none crashed
+        run: |
+          set -e
+          cat /tmp/receiver.log
+          # A 5xx anywhere means an event shape we did not anticipate reached
+          # the handler -- exactly what this job exists to catch.
+          if grep -q '"status":5' /tmp/receiver.log; then
+            echo "::error::The handler returned a 5xx for at least one real Stripe event."
+            exit 1
+          fi
+          for ev in checkout.session.completed customer.subscription.created \
+                    customer.subscription.updated customer.subscription.deleted \
+                    invoice.payment_succeeded invoice.payment_failed
+          do
+            grep -q "$ev" /tmp/receiver.log || { echo "::error::no delivery recorded for $ev"; exit 1; }
+          done
+          echo "All six lifecycle events were delivered, verified, and handled."
+
+      - name: Tear down
+        if: always()
+        run: |
+          kill "$(cat /tmp/listen.pid)" 2>/dev/null || true
+          kill "$(cat /tmp/receiver.pid)" 2>/dev/null || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stripe-e2e-logs
+          path: |
+            /tmp/receiver.log
+            /tmp/listen.log

@@ -22,6 +22,7 @@ it deliberately rather than either act on it prematurely or forget about it.
 | 3 | VAT-period reconciliation | Registreringsbevis arrival | OPEN |
 | 4 | ToS / Privacy Policy / GDPR / liability terms unreviewed | Before public pricing | OPEN |
 | 5 | Formal trademark clearance search not yet performed (web-search-level due diligence only; no TESS/TSDR or attorney clearance opinion) | Before trademark filing finalized, or before public launch | OPEN — pending professional review |
+| 6 | Company NemKonto (state payment/refund account) not registered for CVR 46646223 | Before A3 live payment activation | OPEN — non-urgent, no incoming public payments yet |
 
 ## Addenda
 
@@ -131,3 +132,106 @@ question is not a revisor ruling on mixed personal/business use.
 
 Recorded by Claude (Node 1), Session 4.12-F, per Yehor's own review and
 explicit instruction, same day (2026-07-27).
+
+### 2026-08-01 — Row 3 (VAT-period reconciliation) — CLOSED on Director's attestation
+
+Director (Yehor) attests, as his own primary-source observation: on 2026-08-01
+he viewed TastSelv Erhverv -> Momsindberetning for CVR 46646223, showing
+exactly one period **01-04-2026 to 30-06-2026, Indberetningsfrist 01-09-2026**,
+status not yet filed (Nulindberet action available). This supersedes the
+"best-reading, phone-confirmed" framing of the 2026-07-27 addendum with a
+primary-source screen record, and confirms the standing 1 Sep deadline.
+
+**Honest scope note:** the assistant did NOT independently view the screenshot
+(it was described but never reached the assistant's context / the mount). Row 3
+is recorded **CLOSED on Yehor's directorial attestation**, not on
+assistant-verified evidence. Yehor may share the screenshot at any time for an
+independent-confirmation addendum to be appended.
+
+Filing content unaffected: bilag 2026-001/002 (both dated 30-06-2026,
+reverse-charge, net-0 moms) fall inside this period. **Do NOT file yet** —
+filing is a separate, deliberate action closer to the 01-09-2026 deadline. The
+summary table's Row 3 status is superseded to CLOSED by this addendum.
+
+### 2026-08-04 — Row 4 (legal review) — channel change: free clinic demoted to backstop
+
+Status of the review request, verified this session against the Gmail record
+(not from memory): the initial enquiry was sent 2026-07-29 15:09 UTC and the
+three drafts (Privatlivspolitik, Handelsbetingelser, spørgsmålsliste) followed
+2026-08-01 16:01 UTC, both to `raadgivning@ivsr.dk`.
+
+**New fact, 2026-08-03 10:19 UTC:** Iværksætterretshjælpen replied. They are on
+summer holiday and do not return until **7 September 2026**, and they ask the
+sender to confirm whether the advisory request should be kept. With their stated
+~3–4 week turnaround starting only on return, the free channel now closes Row 4
+no earlier than **early October 2026** — roughly a five-to-six week slip against
+the previously assumed ~20 August follow-up point.
+
+**Director's decision (Yehor, 2026-08-04), recorded before action:**
+
+- The free clinic slot is **kept** — a confirmation reply is to be sent so the
+  request stays in their queue. It costs nothing to hold and a free second
+  opinion in October remains useful.
+- The free clinic is **demoted from primary channel to free backstop**.
+- A **paid, professionally-accountable Danish reviewer becomes the primary
+  channel**, pursued in parallel starting this week. Rationale as stated by the
+  Director: a scoped review of two documents against a prepared question list is
+  small billable work, and a paid specialist can plausibly turn it around in days
+  rather than two months; being hostage to one queue's holiday schedule is exactly
+  the failure mode the parallel-channel plan existed to avoid.
+
+**What does NOT change.** Every hard boundary stands unaltered: no public
+pricing, no live payment keys, no GitHub App public flip, no Marketplace listing
+publish — until Row 4 actually closes, via whichever channel closes it first.
+The channel change accelerates the gate; it does not open it. Row 4 remains
+**OPEN**; it closes only when a professionally-accountable reviewer answers in
+writing.
+
+Recorded by Claude (Node 1), Session 4.12-J, 2026-08-04. Gmail dates above are
+assistant-verified via the Gmail API this session; the choice of channel strategy
+is the Director's, recorded as his decision, not an assistant recommendation
+adopted silently.
+
+### 2026-08-04 — Row 6 (NemKonto) — seeded, and erst.dk auto-notice cross-checked
+
+**Trigger and evidence.** Yehor directly shared a screenshot of `virk.nemkonto.dk` →
+"Virksomhedens Nemkonto", logged in as Yehor Kaliberda for CVR-nr. 46646223. The page
+reads verbatim: **"Ingen NemKonto registreret."** This is directly-viewed image evidence
+in this session (not a description of a screenshot that never arrived), so it is recorded
+as assistant-verified, not attestation-only.
+
+**What NemKonto is and why it matters, briefly.** NemKonto is the single bank account the
+Danish state uses to pay a CVR-registered entity — VAT refunds, any public disbursement.
+It has no bearing on receiving customer payments via Stripe. Its practical relevance to
+this project is specifically **A3 (live payment onboarding)**, where Stripe's live
+activation flow asks for legal/business identity details generally, and a functioning
+NemKonto is the standard precondition for the business to receive any state-side payment
+correctly once real operations begin. **Not urgent today** — no incoming public payment is
+pending, and it is a short bank-linking action whenever Yehor chooses to do it (typically via
+MitID Erhverv at nemkonto.dk, "Virksomhed").
+
+**Cross-checked against the same-day erst.dk automated notice.** A same-day email from
+`noreply@erst.dk` ("FixProve er oprettet med CVR-nr.: 46646223", received
+2026-08-04T13:57:29Z — independently confirmed via the Gmail record, not taken on the
+pasted transcript's word) lists three post-registration to-dos: MitID, Digital Post,
+NemKonto. This is the standard automated CVR-approval notice and is arriving **late**
+relative to the actual CVR issuance (2026-07-22, per `KS-REPORT-4.11.5-addendum-cvr-issued.md`)
+— roughly a two-week lag, not a new registration event. Status of the three items,
+checked against this project's own record rather than assumed from the email:
+
+- **MitID tilmeldt virksomheden** — plausibly already in effect; Yehor has been
+  authenticating to Virk / erst.virk.dk / TastSelv Erhverv with MitID Erhverv under this
+  CVR across multiple prior sessions. Not independently re-verified this session (no
+  screenshot requested) — noted as "very likely done," not "confirmed done."
+- **Digital Post activated** — previously recorded, Yehor-reported, in
+  `MEMORY/project_fixprove_digital_post.md` (2026-07-28), itself explicitly logged as
+  "Yehor-reported, not assistant-verified." Unchanged by this addendum.
+- **NemKonto** — **confirmed NOT registered**, directly viewed this session, per above.
+  This is the one item of the three genuinely open and worth acting on.
+
+**Status: OPEN, non-urgent.** No calendar deadline attached; the natural trigger is
+"before A3," which is itself gated behind PITFALL row 4 (legal review) and is not close.
+Recorded here rather than silently assumed complete because the erst.dk email's framing
+("3 ting du skal gøre") could otherwise read as urgent homework it is not.
+
+Recorded by Claude (Node 1), Session 4.12-J, 2026-08-04.
