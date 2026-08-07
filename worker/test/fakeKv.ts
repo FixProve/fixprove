@@ -12,19 +12,29 @@
 
 export interface FakeKvBackingStore {
   data: Map<string, string>;
+  /**
+   * KS-TRACE: LEGAL-4.12K-TTL-SAFETY-NET-TEST | records the `options` object
+   * (if any) passed to the most recent `put` call for each key, so a test
+   * can assert an `expirationTtl` was actually supplied -- not just that
+   * `put` was called at all.
+   */
+  putOptions: Map<string, { expirationTtl?: number } | undefined>;
 }
 
 export function createFakeKv(): FakeKvBackingStore & { asKvNamespace: () => any } {
   const data = new Map<string, string>();
+  const putOptions = new Map<string, { expirationTtl?: number } | undefined>();
   return {
     data,
+    putOptions,
     asKvNamespace() {
       return {
         async get(key: string) {
           return data.has(key) ? data.get(key)! : null;
         },
-        async put(key: string, value: string) {
+        async put(key: string, value: string, options?: { expirationTtl?: number }) {
           data.set(key, value);
+          putOptions.set(key, options);
         },
         async delete(key: string) {
           data.delete(key);

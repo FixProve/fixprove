@@ -44,6 +44,25 @@ The CLI (`/cli` + the Python resolver engine) is published and live on npm
 and PyPI. The GitHub App (`/app`) runs the same deterministic check as a
 blocking status on pull requests.
 
+## Privacy
+
+<!--
+KS-TRACE: LEGAL-4.12K-README-TELEMETRY-SYNC | requirement: PRIVACY-POLICY-DRAFT-v2.md
+§2.3 makes a "no network calls" representation about the CLI/engine; this
+README previously only said "zero LLM tokens" (no model inference), a
+narrower and different claim -- both audits and the original v1 draft's
+Verification Appendix flagged the mismatch. Wording below is intentionally
+identical to the Privacy Policy so the two documents cannot silently drift.
+Time-bound ("as of this version") rather than an unqualified forever-promise.
+-->
+
+As of the current version, the FixProve CLI and analysis engine make no
+network calls and collect no telemetry — your code is analysed entirely on
+your own machine or CI runner. If a future version adds any network
+capability (including opt-in telemetry), this section and the project's
+Privacy Policy will be updated together, and any opt-in will require your
+explicit consent.
+
 ## Build
 
 ```

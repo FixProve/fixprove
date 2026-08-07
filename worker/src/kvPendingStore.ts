@@ -29,6 +29,19 @@ import type {
 // class exists so callers (the Worker's route handlers) can
 // `instanceof`-check and log/classify KV failures distinctly from other
 // error types, rather than treating every failure alike.
+// KS-TRACE: LEGAL-4.12K-TTL-SAFETY-NET | requirement: PITFALL row 4 / GDPR
+// Art 5(1)(e) storage-limitation gap -- pending correlation records had no
+// automatic expiry. callbackHandler.ts's S2.1-CALLBACK-HANDLE already
+// deletes the record explicitly on the normal-completion path (see its
+// `store.delete(...)` call), so this TTL is a SAFETY NET for the abnormal
+// path only: a check run whose customer CI never calls back (crashed run,
+// abandoned PR, callback lost) would otherwise leave a stale personal-data
+// record in KV forever. 24h comfortably exceeds any realistic CI runtime
+// while keeping the worst-case retention bounded and disclosable in the
+// Privacy Policy as a criterion, not an indefinite gap. | test:
+// test_put_sets_a_ttl_safety_net_matching_the_constant
+export const PENDING_CHECK_RUN_TTL_SECONDS = 86400; // 24h safety net; explicit delete-on-completion is the normal path
+
 export class KVStoreError extends Error {
   constructor(
     public readonly operation: "put" | "get" | "delete",
@@ -70,7 +83,8 @@ export class KVPendingCheckRunStore implements PendingCheckRunStore {
   async put(entry: PendingCheckRun): Promise<void> {
     const k = key(entry.owner, entry.repo, entry.kind, entry.correlationId);
     try {
-      await this.kv.put(k, JSON.stringify(entry));
+      // KS-TRACE: LEGAL-4.12K-TTL-SAFETY-NET (see module-level trace above)
+      await this.kv.put(k, JSON.stringify(entry), { expirationTtl: PENDING_CHECK_RUN_TTL_SECONDS });
     } catch (err) {
       throw new KVStoreError("put", err);
     }

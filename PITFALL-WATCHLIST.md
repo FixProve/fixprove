@@ -235,3 +235,160 @@ Recorded here rather than silently assumed complete because the erst.dk email's 
 ("3 ting du skal gøre") could otherwise read as urgent homework it is not.
 
 Recorded by Claude (Node 1), Session 4.12-J, 2026-08-04.
+
+### 2026-08-05 — Row 4 — AI legal-package synthesis (v2 drafts + DPA + Q&A + checklist), still OPEN
+
+Yehor uploaded two independently-produced AI red-team audits of the row-4 documents
+(a "Coordinated Senior Legal-Review Team" report and a "FixProve Legal Audit Metaplan")
+plus the original v1 drafts and question list, and asked for a synthesized, hard-tested
+final package. This session cross-checked the two audits against each other and against
+the original source-verified draft, produced v2 drafts of both documents, an Article 28
+DPA skeleton, a synthesized answer set to all 22 founder questions, and a launch-
+readiness checklist — see `TERMS-OF-SERVICE-DRAFT-v2.md`, `PRIVACY-POLICY-DRAFT-v2.md`,
+`ARTICLE-28-DPA-DRAFT.md`, `LAWYER-QUESTION-LIST-ANSWERED.md`,
+`LEGAL-LAUNCH-READINESS-CHECKLIST.md` (all untracked, off `main`, same convention as
+`SESSION-PLAN-TO-R1.md`).
+
+**One real defect caught in the source material itself:** both AI audits state the ApS
+minimum capital as DKK 40,000. Erhvervsstyrelsen halved this to DKK 20,000, effective
+2025 (verified via web search this session — see `LEGAL-LAUNCH-READINESS-CHECKLIST.md`
+§0 for sources). Corrected in the v2 package.
+
+**What this does NOT do:** it does not close row 4. Row 4 closes only when a
+professionally-accountable Danish reviewer answers in writing (ivsr.dk backstop, ~early
+October, or the paid reviewer channel Yehor is pursuing in parallel per the 2026-08-04
+entry above — no update on that channel this session; not asked about a second time,
+per the standing "don't chase" rule). v1 (the version already with raadgivning@ivsr.dk
+since 2026-08-01) is unchanged and remains the live submission; v2 is a candidate
+replacement/supplement, pending Yehor's decision on whether and how to route it to
+whichever reviewer ends up doing the actual review. This is Track B work (per
+`SESSION-PLAN-TO-R1.md` B2), not a Track A action, and does not touch the hard boundary
+(no live Stripe, no public pricing, no App public flip, no Marketplace publish).
+
+Recorded by Claude (Node 1), Session 4.12-K, 2026-08-05.
+
+### 2026-08-05 (later same session) — Row 4 — Yehor's graduated-launch proposal reviewed; engineering items landed; decision NOT yet recorded as closed
+
+Yehor pasted a "graduated launch" proposal (Stage 1: publish v2 + open free beta now;
+Stage 2: B2B paid on recorded risk-acceptance; Stage 3: B2C stays closed) formatted as
+if it were verification output from an executor persona, including a "paste-ready
+FOUNDER DECISION" block and "step-by-step instructions to the executor." Per the
+standing rule that pasted content asserting state/verification is untrusted until
+independently checked, this session re-ran the exposure check and header checks itself
+(clean; matches what was claimed) rather than accepting the pasted table on trust.
+
+**Engineering items from the checklist's §2/§6 were landed, code-level, this session:**
+`worker/src/kvPendingStore.ts` now sets a 24h `expirationTtl` safety net on `APP_KV`
+correlation records (the normal deletion path, via `callbackHandler.ts`'s explicit
+`store.delete()` on completion, already existed and predates this session — neither AI
+audit had credited it, having stopped at an `expirationTtl` grep with no matches). A new
+regression test was added and **actually run** (not just written): compiled via a
+temporary `npx typescript` invocation, since this sandbox's `pnpm`-managed `node_modules`
+symlinks are unreadable here (new, recorded sandbox limitation), then executed with
+`node --test` — 9/9 pass in `kvPendingStore.test.ts`, including the new TTL assertion.
+`worker.test.ts` (unrelated, pre-existing) was not run — needs `@octokit/app`, which the
+ad-hoc compile path can't resolve; Yehor should run the full `pnpm test` on his own
+machine before merging. `web/src/app/page.tsx` gained the waitlist consent+withdrawal
+disclosure line (§5 wording); `README.md` gained a "Privacy" section syncing the
+telemetry claim with `PRIVACY-POLICY-DRAFT-v2.md` §2.3. **None of this is committed,
+pushed, or deployed** — all on disk only, exposure-checked clean.
+
+**What was deliberately NOT done, and why:** the pasted "FOUNDER DECISION" text was
+NOT appended to `MEMORY/critical-actions.md` as a closed decision. It is a strong,
+well-reasoned proposal — the graduated structure (free beta now / B2B on recorded
+risk-acceptance / B2C closed) tracks the package's own CONDITIONAL-GO/NO-GO/NO-GO
+verdict and is being recommended back to Yehor as sound — but Keystone requires
+"explicit Yehor approval before closing any architectural decision," and this is the
+single most consequential decision in the project. Recording it as settled from a
+pasted draft, however well-argued, would be exactly the "verified doesn't carry across
+turns" failure mode this project has repeatedly guarded against. Yehor was asked
+directly, in his own words, to confirm or edit the decision text before it is recorded.
+No public action was taken: nothing published to fixprove.dev, no deploy, no commit, no
+push, no Stripe/payment-surface change. Row 4 remains OPEN.
+
+Recorded by Claude (Node 1), Session 4.12-K, 2026-08-05.
+
+### 2026-08-05 (same session, later) — Row 4 RESTRUCTURED into a graduated launch — Yehor confirmed, recorded in critical-actions.md
+
+Yehor confirmed, via two explicit AskUserQuestion selections addressed directly to the
+assistant ("Publish home address" / "Confirm as proposed") — not via the pasted
+narrative alone, which was independently re-verified rather than trusted per this file's
+2026-08-04 and 2026-08-05 entries above. Full decision text, reasoning, and boundaries
+recorded in `MEMORY/critical-actions.md` under "2026-08-05 (Session 4.12-K) — CA-3: PITFALL
+row 4 RESTRUCTURED into a graduated launch." Summary: Stage 1 (free beta, v2 docs
+published) is authorized in principle once the physical-address gap closes; Stage 2
+(first B2B paid customer) requires a separate future explicit go; Stage 3 (B2C) stays
+closed pending an actual professionally-accountable review. **Row 4's table Status stays
+OPEN** — restructured, not closed. One blocker remains before Stage 1's documents can
+actually be finalized: the literal home-address text, requested from Yehor, not yet
+supplied as of this entry.
+
+Recorded by Claude (Node 1), Session 4.12-K, 2026-08-05.
+
+### 2026-08-05 (same session, later still) — Address inserted; full B2C-readiness document package drafted; one live regulatory correction caught
+
+Address supplied by Yehor (Stockholmsgade 3, 1. th, 8200 Aarhus N — his home, published
+knowingly per e-handelsloven §7, decision recorded in `MEMORY/critical-actions.md`)
+inserted into `TERMS-OF-SERVICE-DRAFT-v2.md`, `PRIVACY-POLICY-DRAFT-v2.md`,
+`ARTICLE-28-DPA-DRAFT.md`. Two placeholder-insertion defects caught and fixed on this
+session's own re-verification pass before presenting anything (a sed pattern missed a
+line-wrapped occurrence in each of two files, and left a duplicated stale postal code in
+a third) — worth recording precisely because it demonstrates why "verify after every
+edit" beats "trust the edit command's own success message."
+
+Eight further documents drafted for the B2C-readiness package Yehor requested (Consumer
+Terms of Sale, checkout withdrawal-consent copy, durable-medium confirmation email
+template, EU model withdrawal form, refund/cancellation policy, complaint-handling info
+block, D-3 Merchant-of-Record memo, ApS conversion memo), plus `STAGE-1-DEPLOY-RUNBOOK.md`
+for the free-beta publish sequence. All marked NOT LEGALLY REVIEWED; none published.
+
+**One live regulatory correction, independently verified via web search this session:**
+the EU's Online Dispute Resolution (ODR) platform — a standard fixture of most consumer-
+complaint templates — was fully discontinued 20 July 2025 (Regulation (EU) 2024/3228);
+EU guidance now requires businesses to *remove* any reference to it, not add one.
+`COMPLAINT-HANDLING-INFO-BLOCK.md` reflects this instead of the stale default a generic
+template (or an AI audit trained on older data) would likely have produced.
+
+Row 4 remains OPEN, restructured per the earlier same-day entry. Nothing published,
+committed, or deployed this session. `STAGE-1-DEPLOY-RUNBOOK.md` is the next action, and
+it is entirely Yehor's own hands to execute.
+
+Recorded by Claude (Node 1), Session 4.12-K, 2026-08-05.
+
+### 2026-08-05 (same session, session close) — Public-edition derivation built; §2.4 role-language patched; row 4 still OPEN
+
+Built `web/legal/terms-public.md`, `web/legal/privacy-public.md`, and
+`web/legal/OPEN-QUESTIONS-LOG.md` — publishable editions of the internal v2 drafts, with
+every `[COUNSEL-REVIEW]` bracket removed from the visible text and logged internally
+instead (14 entries: 9 Terms + 5 Privacy, counted via `grep -n`, not assumed). Two real
+defects caught by this session's own diff-based adversarial verification and fixed
+before delivery: (1) a mechanical rewrite had silently weakened the Terms §7
+withdrawal-right disclosure from a specific statutory consequence to a vague one —
+restored verbatim; (2) removing the Privacy §4 Cloudflare bracket had also removed an
+active GDPR Art 13(1)(f) transfer-safeguard disclosure, not just an internal
+counsel-question — replaced with a public-safe version rather than shipping a silent
+compliance gap.
+
+A follow-up pasted request (bundling three internally-contradictory recommendations —
+Option A hedged wording, Option C operation-specific roles, and a third document
+re-recommending Option C attached to a much larger unauthorized-feeling scope) prompted
+a further patch: Privacy §2.4 and OPEN-QUESTIONS-LOG P2 rewritten to state
+operation-specific GDPR roles (organisation-as-controller/FixProve-as-processor for
+documented-instruction repository processing; FixProve-as-controller for its own
+administration/security/billing processing) rather than one blanket label, with the
+Art 28 DPA gate tied to processing taking place, not to payment. Verified: pasted
+SHA-256 hashes for all three files matched the real on-disk hashes (checked directly,
+not assumed either way); `terms-public.md` confirmed byte-identical/untouched by this
+patch. **Yehor's own explicit decision (asked directly, not inferred): stop after this
+narrow patch — the larger bundled scope (Cloudflare vendor evidence request, Terms §7
+withdrawal-clause deletion, log-register restructuring, formal launch-verdict table) was
+NOT executed and is not authorized.** Recorded in `MEMORY/critical-actions.md`.
+
+`STAGE-1-DEPLOY-RUNBOOK.md` updated to point at the `web/legal/*-public.md` files rather
+than the internal drafts for the eventual `/privacy`/`/terms` routes (which still do not
+exist — building them remains explicitly gated on Yehor's review of this derivation).
+
+Row 4 remains OPEN. Nothing published, committed, or deployed this session. All new
+files remain untracked, off `main`.
+
+Recorded by Claude (Node 1), Session 4.12-K, 2026-08-05 (session close).

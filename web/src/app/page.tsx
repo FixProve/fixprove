@@ -133,6 +133,25 @@ export default function Home() {
             {status === "submitting" ? "Joining…" : "Notify me"}
           </button>
         </form>
+        {/*
+          KS-TRACE: LEGAL-4.12K-WAITLIST-CONSENT | requirement: Markedsføringsloven
+          §10 -- explicit consent + visible withdrawal notice at the point of
+          collection, before submission, not just in a policy the visitor may
+          never open. Wording matches LEGAL-LAUNCH-READINESS-CHECKLIST.md §5
+          verbatim, kept as a static disclosure line rather than a new checkbox
+          + form-state field, since this is a single-purpose opt-in (no other
+          data collected here) -- flagged in the checklist as a reviewer
+          question, not asserted here as counsel-confirmed. NOT YET DEPLOYED:
+          this file only reflects the intended change; it goes live on Yehor's
+          own `wrangler deploy`, and the /privacy link below 404s until the
+          Privacy Policy is actually published to that path.
+        */}
+        <p className="consent-note">
+          By submitting your email, you consent to receiving FixProve launch
+          news at this address. You can withdraw consent at any time via the
+          unsubscribe link in any email. See our{" "}
+          <a href="/privacy">Privacy Policy</a>.
+        </p>
         {message && (
           <p
             className={`form-message ${

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { KVPendingCheckRunStore, KVStoreError } from "../src/kvPendingStore.js";
+import { KVPendingCheckRunStore, KVStoreError, PENDING_CHECK_RUN_TTL_SECONDS } from "../src/kvPendingStore.js";
 import { createFakeKv, createFailingFakeKv } from "./fakeKv.js";
 
 // KS-TRACE: S4.3-KV-STORE-CORRELATION-UPDATE-TEST | mirrors
@@ -35,6 +35,21 @@ test("owner/repo lookups are case-insensitive (same semantics as InMemoryPending
   const store = new KVPendingCheckRunStore(kv.asKvNamespace());
   await store.put({ ...ENTRY, owner: "Acme", repo: "Widgets" });
   assert.deepEqual(await store.get("acme", "widgets", "pr", "10"), { ...ENTRY, owner: "Acme", repo: "Widgets" });
+});
+
+// KS-TRACE: LEGAL-4.12K-TTL-SAFETY-NET-TEST | requirement: PITFALL row 4 /
+// GDPR Art 5(1)(e) -- every put must carry the safety-net TTL so a pending
+// correlation record cannot persist indefinitely if the customer's CI never
+// calls back. Explicit delete-on-completion (callbackHandler.ts) is the
+// normal path and is unaffected by this -- this test only guards the
+// abnormal one.
+test("put sets an expirationTtl safety-net matching PENDING_CHECK_RUN_TTL_SECONDS", async () => {
+  const kv = createFakeKv();
+  const store = new KVPendingCheckRunStore(kv.asKvNamespace());
+  await store.put(ENTRY);
+  const k = "acme/widgets#pr:10";
+  assert.deepEqual(kv.putOptions.get(k), { expirationTtl: PENDING_CHECK_RUN_TTL_SECONDS });
+  assert.equal(PENDING_CHECK_RUN_TTL_SECONDS, 86400, "safety-net TTL is 24h, matching the Privacy Policy v2 disclosure");
 });
 
 // -- adversarial: KV failures are classified, never a silent hang --
