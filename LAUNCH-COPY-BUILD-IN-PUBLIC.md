@@ -21,13 +21,13 @@
 
 **Secondary line, smaller, under the CTA:**
 
-> Want it on every pull request? The GitHub App runs the same check, on your own runner. Your code never leaves it.
+> Want it on every pull request? The GitHub App runs the same check, on your own runner. Only finding fragments — file paths, line numbers, the unresolved expression — transit our endpoint, encrypted and never persisted.
 
 ---
 
 ## 2. One-paragraph description (for directories, npm/PyPI listings, App marketplace)
 
-FixProve is a deterministic, AST-level verifier that catches hallucinated imports, methods, and API calls in AI-generated code — before they merge. It does not use a language model. It parses your code, introspects what's actually installed, and reports a mismatch the same way every time, for the same input. Open-core CLI (Python + TypeScript/JavaScript). A GitHub App that runs the same check as a blocking status on pull requests, without your source code ever leaving your own CI runner.
+FixProve is a deterministic, AST-level verifier that catches hallucinated imports, methods, and API calls in AI-generated code — before they merge. It does not use a language model. It parses your code, introspects what's actually installed, and reports a mismatch the same way every time, for the same input. Open-core CLI (Python + TypeScript/JavaScript). A GitHub App that runs the same check as a blocking status on pull requests. Analysis runs in your CI — only finding fragments (file paths, line numbers, the unresolved expression) transit our endpoint, encrypted and never persisted.
 
 ---
 

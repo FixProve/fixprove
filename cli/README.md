@@ -40,9 +40,13 @@ interpreter found at all.
 ## Want this on every pull request, without installing anything?
 
 The [FixProve GitHub App](https://fixprove.dev/app) runs this exact check
-as a blocking status on your PRs — your source code never leaves your own
-CI runner (see the GitHub Actions workflow template it publishes). This
-CLI is the same deterministic core, for local/self-hosted use.
+as a blocking status on your PRs. Analysis runs in *your* CI (see the
+GitHub Actions workflow template it publishes) — only specific finding
+fragments (file paths, line numbers, the unresolved expression) transit
+our endpoint, encrypted and never persisted, to post the check annotation;
+see the [Privacy Policy](https://fixprove.dev/privacy) for the full
+description. This CLI is the same deterministic core, for local/self-hosted
+use.
 
 ## License
 MIT — see [LICENSE](./LICENSE). This package is the open-core component of

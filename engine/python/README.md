@@ -15,10 +15,14 @@ Exit codes: `0` clean, `1` unresolved symbol(s) found, `2` usage/setup
 error — designed to drop straight into a CI gate.
 
 This is the same engine that powers the [FixProve GitHub App](https://fixprove.dev/app),
-which posts this check as a blocking status directly on your pull requests
-— without your source code ever leaving your own CI runner. This CLI is
-the open-core, self-hosted way to run the identical deterministic core
-locally or in your own pipeline.
+which posts this check as a blocking status directly on your pull requests.
+Analysis runs in *your* CI — the App does not read or store your repository's
+source code. Only specific finding fragments (file paths, line numbers, and
+the unresolved expression) transit our endpoint, encrypted and never
+persisted, to post the check annotation; see the
+[Privacy Policy](https://fixprove.dev/privacy) for the full description.
+This CLI is the open-core, self-hosted way to run the identical
+deterministic core locally or in your own pipeline.
 
 ## Scope (current)
 

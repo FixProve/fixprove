@@ -83,7 +83,11 @@ export default function Home() {
       </p>
       <p className="cta-note muted">
         The GitHub App runs the same check as a blocking status on pull
-        requests. Not yet open for third-party installation.
+        requests — currently limited to internal use, not yet open for
+        third-party installation, with no paid tier yet. Only finding
+        fragments (file paths, line numbers, the unresolved expression)
+        transit our endpoint, encrypted and never persisted — see our{" "}
+        <a href="/privacy">Privacy Policy</a>.
       </p>
 
       <section>
