@@ -64,13 +64,13 @@ export default function AppPage() {
         </p>
         <p className="footer-links">
           <a href="https://github.com/FixProve/fixprove">GitHub</a>
-          {" &middot; "}
+          {" · "}
           <a href="https://www.npmjs.com/package/fixprove">npm</a>
-          {" &middot; "}
+          {" · "}
           <a href="https://pypi.org/project/fixprove/">PyPI</a>
-          {" &middot; "}
+          {" · "}
           <a href="/privacy">Privacy Policy</a>
-          {" &middot; "}
+          {" · "}
           <a href="/terms">Terms of Service</a>
         </p>
       </footer>
