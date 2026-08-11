@@ -8,8 +8,13 @@
 
 FixProve proves your AI-generated code before it merges — deterministically
 verifying that every import, symbol, method, and API call resolves against
-your real installed dependencies, in CI, with zero LLM tokens and near-zero
-false positives.
+your real installed dependencies, in CI, with zero LLM tokens. Conservative
+by design: when it can't resolve a reference with certainty, it skips rather
+than guesses — so it doesn't cry wolf.
+
+> The CLI and engine (`/cli`, `/engine`) are MIT-licensed; the GitHub App and
+> web app (`/app`, `/web`) are proprietary — see [NOTICE.md](./NOTICE.md) for
+> the full per-package breakdown.
 
 ## Install
 

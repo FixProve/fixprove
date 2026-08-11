@@ -168,7 +168,34 @@ export default function Home() {
         )}
       </section>
 
-      <footer>FixProve &middot; fixprove.dev</footer>
+      <footer>
+        {/*
+          #KS-TRACE: S4.13-FOOTER-TRADER-ID | requirement: "add required Danish
+          trader identification to the homepage itself" (Prompt A Prompt A
+          synthesis, R3.RECOMMENDATION, 4/4 model consensus) | assumption: CVR
+          46646223 and the Aarhus address are the same details already public on
+          /privacy and /terms (Privacy Policy §1, Terms §1/§11) -- reproduced
+          here verbatim, not re-derived | test: visual check against /privacy
+          and /terms after deploy; the contact email (yehor@yehor.ai) matches
+          Terms §11 exactly.
+        */}
+        <p className="footer-trader">
+          FixProve v/ Yehor Kaliberda &middot; CVR 46646223 &middot; Aarhus,
+          Denmark &middot;{" "}
+          <a href="mailto:yehor@yehor.ai">yehor@yehor.ai</a>
+        </p>
+        <p className="footer-links">
+          <a href="https://github.com/FixProve/fixprove">GitHub</a>
+          {" · "}
+          <a href="https://www.npmjs.com/package/fixprove">npm</a>
+          {" · "}
+          <a href="https://pypi.org/project/fixprove/">PyPI</a>
+          {" · "}
+          <a href="/privacy">Privacy Policy</a>
+          {" · "}
+          <a href="/terms">Terms of Service</a>
+        </p>
+      </footer>
     </main>
   );
 }
