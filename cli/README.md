@@ -24,6 +24,30 @@ If the Python engine isn't installed, `fixprove check` prints an
 actionable `pip install fixprove` message and exits non-zero — it never
 hangs or silently reports a clean pass.
 
+## Privacy
+
+<!--
+KS-TRACE: LEGAL-4.12K-README-TELEMETRY-SYNC | requirement: PRIVACY-POLICY-DRAFT-v2.md
+Mirrors the root README's "## Privacy" section verbatim (same wording,
+same time-bound framing) so the two documents cannot drift. Root README
+carries the full rationale in its own KS-TRACE comment. Promoted from an
+inline link buried under the GitHub App section to its own heading here
+because this is the npm-rendered README and this is the question people
+look to answer before running an unfamiliar tool over their code
+(external feedback, Lars Gyrup Brink Nielsen / AarhusJS, 2026-08-19).
+-->
+
+As of the current version, the FixProve CLI and analysis engine make no
+network calls and collect no telemetry — your code is analysed entirely on
+your own machine or CI runner. If a future version adds any network
+capability (including opt-in telemetry), this section and the project's
+[Privacy Policy](https://fixprove.dev/privacy) will be updated together,
+and any opt-in will require your explicit consent.
+
+This applies to the CLI only. The [FixProve GitHub App](https://fixprove.dev/app)
+is a separate, opt-in product with its own, narrower data flow — see "Want
+this on every pull request" below.
+
 ## Options
 
 Mirrors the underlying Python engine's own flags:
