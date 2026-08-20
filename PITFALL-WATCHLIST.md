@@ -23,6 +23,7 @@ it deliberately rather than either act on it prematurely or forget about it.
 | 4 | ToS / Privacy Policy / GDPR / liability terms unreviewed | Before public pricing | OPEN |
 | 5 | Formal trademark clearance search not yet performed (web-search-level due diligence only; no TESS/TSDR or attorney clearance opinion) | Before trademark filing finalized, or before public launch | OPEN — pending professional review |
 | 6 | Company NemKonto (state payment/refund account) not registered for CVR 46646223 | Before A3 live payment activation | OPEN — non-urgent, no incoming public payments yet |
+| 7 | EU Cyber Resilience Act (CRA) classification for FixProve (commercial open-core FOSS vs. exempt) not yet determined | Before Row 4 legal review concludes, and no later than the reported main-obligations date | OPEN — non-urgent, flagged only, dates below unverified against a primary source |
 
 ## Addenda
 
@@ -392,3 +393,292 @@ Row 4 remains OPEN. Nothing published, committed, or deployed this session. All 
 files remain untracked, off `main`.
 
 Recorded by Claude (Node 1), Session 4.12-K, 2026-08-05 (session close).
+
+### 2026-08-08 — CORRECTION: pricing-exposure count (Session 4.12-M)
+
+CORRECTION, 2026-08-08 (Session 4.12-M): pricing-exposure count was
+carried forward as 'three tracked files' — re-verified via direct grep
+against origin/main and found to be SIX. [FILENAMES REDACTED 2026-08-20 —
+see the 2026-08-20 addendum at the tail of this file. The unredacted list is
+held mount-only under the gitignored MEMORY/ tree.] The six are: one
+build-planning document, four Session-4.12 Keystone reports, and one session
+log. All six remain against the standing hard boundary (no public-facing
+pricing, even placeholders). Remediation decision (redact / accept /
+restructure) remains Yehor's open call, unchanged in status — only the count
+is corrected here.
+
+**Method (Node 1, same append, for reproducibility).** The count was produced by
+iterating every `.md` path in `git ls-tree -r --name-only origin/main` and
+retaining only files where `git show origin/main:<path>` contained *both* of the
+two published tier figures — i.e. the tier *pair*, not any single dollar figure.
+The two literal figures that formed the grep pattern were themselves redacted
+from this entry on 2026-08-20; the reproducible pattern is held mount-only under
+the gitignored MEMORY/ tree, alongside the six full paths.
+
+The six files, described rather than named:
+
+1. the top-level master build-planning document
+2. a Session-4.12 public-surface audit report
+3. a Session-4.12 GitHub cold-start report
+4. a Session-4.12 site reality-sync report
+5. a Session-4.12 repo-hygiene report
+6. the session log paired with item 4
+
+Two further public files carry unrelated dollar figures that are **not** pricing
+tiers and were correctly excluded: `KS-REPORT-0.1-name-clearance.md` and
+`SESSION-0.1-GEMINI-HANDOFF.md` (domain/trademark costs).
+
+**Exposure caveat on this very entry, flagged before any commit.**
+`PITFALL-WATCHLIST.md` is itself a tracked file published on `origin/main`. This
+addendum names the six files but deliberately does **not** restate the figures
+themselves. Committing it would still publish an index pointing a reader directly
+at the exposure. That trade-off is Yehor's call and is not made by this append —
+the entry is written to the mount only and remains uncommitted.
+
+Recorded by Claude (Node 1), Session 4.12-M, 2026-08-08. No pre-existing
+pricing-exposure row existed in this register before this entry; nothing above was
+edited, and the six flagged files were not touched in this task.
+
+### 2026-08-14 — Row 7 (EU Cyber Resilience Act) — seeded, from relayed fork-decision research; dates unverified
+
+**Provenance, stated plainly.** This row was not independently researched by this
+executor session. It is relayed from one of four independent fork-decision research
+passes (labelled F4, "FixProve evidence review") run in a separate guide chat and
+pasted into this session as part of a broader synthesis (`SYNTHESIS-4-14-FORK.md`,
+archived under `MEMORY/research/4-14-FORK/`). This executor session has not fetched
+the CRA text or the European Commission's own guidance directly — nothing here
+should be read as independently VERIFIED in this session's own sense of that word.
+
+**The claim, including its own internal red flag.** The relayed synthesis states the
+EU Cyber Resilience Act entered into force 2024-12-10, with reporting obligations
+beginning — the source text itself gives two different dates in the same sentence,
+first "2026-09-01," immediately followed by "sorry, correction, verified date is
+2026-09-11" — and main obligations from 2027-12-11. A source that self-corrects its
+own date mid-sentence is a source that has not been independently checked here; both
+dates are recorded so neither is silently dropped, and the discrepancy itself is the
+reason this row is flagged "dates unverified" rather than taken as settled.
+
+**Why it's tracked at all despite being unverified.** Commission guidance reportedly
+says non-monetized FOSS outside commercial activity is generally out of scope — but
+FixProve's commercial intent, open-core structure, and active Danish sole-proprietorship
+status mean that exemption is not automatic and needs a real determination, not an
+assumption either way. This belongs inside the existing Row 4 legal-review gate, not
+decided ad hoc here.
+
+**Status: OPEN, non-urgent, flagged only.** No action taken or recommended today. The
+trigger is Row 4's own conclusion, or the actual (still-unconfirmed) main-obligations
+date, whichever comes first. A future session should independently verify the CRA's
+actual in-force and obligation dates against the regulation's Official Journal text or
+the Commission's own CRA guidance page before this row's dates are relied on for
+anything time-sensitive.
+
+Recorded by Claude (Node 1), Session 4.14, 2026-08-14. Four fork-decision research
+documents (F1–F4) referenced in the source synthesis have not yet been archived in
+this session — they arrived truncated (each cut off mid-sentence, pasted-content
+artifact) and were not written to disk rather than saved as partial/corrupted copies.
+`SYNTHESIS-4-14-FORK.md` itself was archived in full; F1–F4 archival is pending
+re-submission of their complete text.
+
+### 2026-08-14 (same session, later) — Row 7 date independently VERIFIED via live search
+
+**This closes the "dates unverified" flag above for the reporting-obligations date
+specifically** — not by trusting the relayed source's self-correction, but by an
+independent live `WebSearch` this session, cross-referencing multiple independent
+compliance-tracking sources (Element, HeroDevs, Star Global, cyberresilienceact.eu,
+Zealience), none of which is the original relayed source. All agree: **CRA Article 14
+reporting obligations (exploited-vulnerability and severe-incident reporting to ENISA
+and the national CSIRT) apply from 11 September 2026** — confirming "2026-09-11," not
+"2026-09-01," as the correct date. The 09-01 figure appears to have been a same-sentence
+typo in the relayed source, now resolved rather than carried forward unverified.
+
+Also confirmed: reporting is tiered (24h early warning / 72h fuller notification / 14-day
+final report), and the September 2026 requirement applies to products already on the
+market, not only new releases — relevant if Row 4's eventual review reaches a
+CRA-in-scope conclusion for FixProve.
+
+**Still not independently verified:** the entry-into-force date (2024-12-10) and the
+main-obligations date (2027-12-11) — both are carried forward from the relayed source
+only and were outside the scope of this specific search. FixProve's own CRA
+classification (commercial-FOSS vs. exempt) remains entirely undetermined — this
+addendum verifies a date, not FixProve's status, per this row's own standing instruction
+not to assert that.
+
+Sources: [Element](https://www.element.com/resources/articles/cyber-resilience-act-article-14-reporting-obligations-guide),
+[HeroDevs](https://www.herodevs.com/blog-posts/cra-reporting-obligations-start-september-2026-what-eol-dependencies-mean-for-your-compliance),
+[Star Global](https://star.global/posts/cyber-resilience-act-article-14-reporting-requirements/),
+[cyberresilienceact.eu](https://www.cyberresilienceact.eu/reporting.html),
+[Zealience](https://zealience.com/resource-hub/cyber-resilience-act-article-14-reporting/).
+
+Recorded by Claude (Node 1), Session 4.14, 2026-08-14 (session-close verification pass).
+
+### 2026-08-19 (Session 4.16) — Row 4 — two of five outreach recipients replied; both now priced or scoped
+
+**Two lawyer replies received**, independently verified via live `search_threads`
+(not from any relayed brief): **NJORD** (Nis Peter Dall, Partner, Advokat (L),
+npd@njordlaw.com, 2026-08-17 14:00 UTC) — willing to review Privacy Policy + ToS;
+declines both no-cure-no-pay and deferred-to-first-revenue ("for usikkert for os");
+offers a free initial scoping meeting, in person or online, then an estimate.
+**Otello** (Anders Skov, Partner, Advokat (L), as@otello.dk, 2026-08-18 13:47 UTC) —
+willing, ordinary time-based terms only; quoted a four-figure DKK estimate
+(exact figure redacted 2026-08-20 — a third party's confidential fee quote; held
+mount-only under the gitignored MEMORY/ tree) for document review +
+question-list response.
+
+**Yehor replied to both, sent himself** (verified via live `search_threads`,
+2026-08-19): to NJORD, accepting the meeting — in person, at their Sydhavnen,
+Aarhus office, not online — to scope the task; to Otello, acknowledging the quote
+and asking whether it holds for 2–3 months given the demand-first sequencing
+(see `critical-actions.md`, D4 discussion, same date). Otello replied again
+same day (2026-08-19 16:02 UTC): estimate holds, unless the task itself changes.
+
+**Row 4 status: two of five channels are now priced/scoped options, not unknowns.**
+Naur, Patrade, and the second NJORD addressee remain silent (3/5). Row 4 remains
+OPEN — outreach and pricing are not a review. The gate still closes only on an
+actual professionally-accountable sign-off. Engagement with either firm proceeding
+to paid work remains gated on the D3 demand-test threshold firing, per the
+demand-first sequencing under discussion this session (recorded separately in
+`critical-actions.md`, not yet formally adopted as of this entry).
+
+Recorded by Claude (Node 1), Session 4.16, 2026-08-19.
+
+### 2026-08-19 (same session, later) — Row 4 — D4 adopted: CLI-first demand track decouples the App flip from D3
+
+**Yehor adopted D4** (demand-first sequencing) with a specific resolution to
+a structural conflict this session identified: the GitHub App flip requires
+Gate-1 (legal review, this row) per the unchanged hard boundary, while D3's
+demand test needs installs — naively circular. Resolved by using the
+already-public, MIT-licensed CLI (`fixprove`, live at `0.1.10` on PyPI/npm)
+as the demand-signal vehicle instead of the App. CLI installs, pilot
+conversations, and pricing questions now count toward D3's threshold,
+independent of Row 4's status.
+
+**Row 4 itself is unchanged and remains OPEN.** Gate-1 still requires a
+professionally-accountable reviewer's written answer before the App flip.
+What's new: the pending NJORD scoping meeting will be used to ask for a
+**minimal-scope, free-install-only opinion** (not the full paid review) as
+the fastest legitimate path to clearing Gate-1 for the flip specifically —
+the full review (pricing/payment/consumer-law scope) remains gated behind
+D3's demand trigger, per D4. The second firm's quoted estimate (figure redacted,
+see above) remains the priced fallback for that full review. No payment authorized by this entry;
+Yehor's words: "No money without my separate word."
+
+Recorded by Claude (Node 1), Session 4.16, 2026-08-19.
+
+### 2026-08-19 (Session 4.16, later) — Row 4 continuation — organic GTM push drafted, not sent
+AarhusJS speaking-slot outreach and Tier-1 direct outreach (Cernel, WasteHero) drafted and delivered
+to mount, hash-verified. Capturi held — Puzzel acquisition (Oct 2024) puts its independent-CI status
+in question; do not send until confirmed. WasteHero contact emails found via third-party aggregator
+were explicitly NOT used — flagged UNCERTAIN, LinkedIn name-finding recommended instead. Nothing sent;
+Yehor sends these himself per standing CA discipline (message content, not a registered critical
+action).
+
+### 2026-08-19 (Session 4.16, close) — process incident: mistaken commit of this file, caught and reverted before push
+
+At session close, this file's backlog since the 4.13 commit (2026-08-11) was staged
+and committed (`33d2d79`, later amended to `7a91fda`) without first re-reading its own
+prior addenda. This directly violated the 2026-08-08 pricing-exposure entry's explicit
+instruction above: *"the entry is written to the mount only and remains uncommitted"*
+pending Yehor's own call on whether naming the six flagged files is safe to publish,
+even without the dollar figures. That call was never made — this commit would have
+published the index anyway.
+
+**Caught before push** (only Yehor's machine pushes, per standing convention — nothing
+went live) via this same close-out's own verification pass. Fixed by `git reset --soft
+HEAD~1` then `git reset PITFALL-WATCHLIST.md`, confirmed back to `5a44fda` (matching
+`origin/main` exactly) with this file unstaged, modified-on-disk only. Content verified
+intact (565 lines, byte-identical to pre-commit) — nothing lost, only the premature
+commit undone.
+
+**Standing instruction restated, unchanged:** the pricing-exposure commit-vs-exposure
+call is still Yehor's alone, still open, now a seventh session running (4.12-M through
+4.16). Before any future bulk commit of this file, re-read every addendum for an
+explicit hold instruction first — do not assume "modified" means "safe to commit."
+
+Recorded by Claude (Node 1), Session 4.16, 2026-08-19.
+
+
+### 2026-08-20 (Session 4.17) — pricing-exposure question CLOSED by Yehor: Option 2 (redact + commit). Two defects found in the premise while executing.
+
+**Yehor's call, 2026-08-20:** redact, then commit. The question had been open
+since 2026-08-08 (Session 4.12-M) and was carried unresolved through eight
+sessions. Closed same-session on the call.
+
+**What was redacted from the 2026-08-08 entry above:** the six literal filenames,
+and the two literal tier figures that formed the grep pattern. Each filename is
+replaced by a generic descriptor — sufficient for internal navigation, and
+insufficient to point an external reader of git history at the exposure. Nothing
+was deleted: the full unredacted pre-redaction copy of this file is preserved
+mount-only at
+`MEMORY/redaction-originals/PITFALL-WATCHLIST.unredacted-pre-4.17-2026-08-20.md`
+(SHA-256 `c3043c7c1b48717748e1a6b841258388bb05c567630c9e139ee3ee2488245eaf`,
+589 lines), under the gitignored `MEMORY/` tree.
+
+**Append-only convention — deviation declared, not glossed.** This register is
+append-only by standing convention. Redaction is the one operation that cannot be
+performed by appending: removing signposting requires removing text. The
+deviation is therefore explicit, bounded to the two blocks named above,
+authorised by Yehor's 2026-08-20 call, and made non-destructive by the preserved
+mount-only original. No other line of this file was altered.
+
+**DEFECT 1, found while executing — the count is no longer six. It is TEN.**
+The 2026-08-08 figure was accurate on 2026-08-08 and is now stale. A fresh re-run
+of the same method against `origin/main` on 2026-08-20 returns ten tracked files
+carrying the tier pair, not six. The four additions, described rather than named:
+a Session-4.13 public-presence audit report, the session log for Session 4.12-M,
+the session log for Session 4.13, and the session-log index. Three of those four
+are the very session records that documented the exposure — **the act of
+recording the problem in tracked files enlarged it.** The exposure grew by
+roughly two-thirds during the eight sessions the remediation decision sat open.
+That is the concrete cost of the deferral, recorded here rather than softened.
+
+**DEFECT 2, found while executing — the entry restated the figures it claimed not
+to restate.** The 2026-08-08 entry's own exposure caveat asserted that it
+"deliberately does **not** restate the figures themselves." That was false: its
+method paragraph carried both literal tier figures inline, as the grep pattern.
+Committing the entry as written would have published the exact tier pair, not
+merely an index pointing at it — strictly worse than the outcome the caveat was
+weighing. Both figures are redacted above.
+
+**What this redaction does and does not achieve, stated plainly.** It removes the
+signpost. It does **not** remediate the underlying exposure: ten files carrying
+the tier pair remain public on `origin/main`, unchanged by this entry, and git
+history would retain the figures even if all ten were edited today. Whether to
+remediate that underlying exposure — and whether ten public files quoting an
+unlaunched product's tier pair matters commercially at all — is a separate
+question this entry does not answer and does not claim to have closed.
+
+**Not pushed.** Committed locally only. `git push` remains Yehor's machine and
+his per-instance go-ahead, unchanged.
+
+Recorded by Claude (Node 1), Session 4.17, 2026-08-20.
+
+### 2026-08-20 (Session 4.17, same task) — SECOND redaction, found by the pre-staging exposure grep, outside the scope Yehor decided
+
+The standing pre-staging exposure grep — run on the redacted candidate before
+anything was staged — did **not** come back clean. It caught a second, unrelated
+exposure that no prior session had flagged and that Yehor's redaction call did not
+cover: two Session-4.16 addenda above quoted **a named external law firm's
+confidential fee estimate**, verbatim and attributed, in a file tracked on a public
+repository. Those addenda are uncommitted; `git show origin/main:PITFALL-WATCHLIST.md`
+confirms the figure is not yet public. This commit would have been its first
+publication.
+
+Assessment, stated plainly: this is a worse exposure than the one that took eight
+sessions to decide. The FixProve tier pair is the project's own unlaunched pricing.
+A law firm's quoted fee is a third party's commercial information, given to Yehor
+in confidence during a live negotiation with that same firm, and published here
+under the partner's name and email. It was redacted on the same principle and by
+the same method — figure replaced by a non-specific description, exact figure
+preserved mount-only under the gitignored MEMORY/ tree. Both firms' names, roles
+and public office email addresses were left intact; only the fee figure was
+removed.
+
+This was not authorised in advance and is flagged for Yehor's review before any
+push. If he judges the redaction unnecessary it reverses in one edit, and the
+unredacted text is preserved. The reverse mistake would not have been reversible.
+
+Standing lesson, added to this register's own operating rules: the pre-staging
+exposure grep earns its keep on the hits nobody was looking for. Run it against
+the whole file every time — not only the section being edited.
+
+Recorded by Claude (Node 1), Session 4.17, 2026-08-20.
