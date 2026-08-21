@@ -682,3 +682,51 @@ exposure grep earns its keep on the hits nobody was looking for. Run it against
 the whole file every time — not only the section being edited.
 
 Recorded by Claude (Node 1), Session 4.17, 2026-08-20.
+
+### 2026-08-21 (Session 4.18) — Row 4 — NJORD meeting CONFIRMED by primary evidence; Row 4 itself stays OPEN
+
+Yehor supplied a screenshot of the Gmail thread "SV: Att: Nis Peter Dall —
+Forespørgsel om vurdering af Privatlivspolitik/Vilkår" and asked that the
+meeting be recorded as confirmed. Rather than record it on the strength of the
+screenshot's description, the underlying thread was fetched and read directly
+this session (`get_thread`, thread `1a01a8267835adfc`). The screenshot's claims
+check out against that primary source, item for item:
+
+- `npd@njordlaw.com`, 2026-08-20 11:57:15 UTC (13:57 CEST): "Jeg har reserveret
+  et mødelokale på onsdag d. 26. kl. 1600-1700."
+- Yehor, from `yehor.callmedai@gmail.com`, SENT 2026-08-20 13:57:37 UTC (15:57
+  CEST): "Onsdag den 26. august kl. 16.00-17.00 passer fint, og jeg møder gerne
+  fysisk op hos jer."
+- Attachment `FixProve-NJORD-scoping-brief.pdf` present on that sent message,
+  confirmed by filename in the message's own attachment list.
+
+**Status recorded: the meeting is CONFIRMED** — Wednesday 26 August 2026,
+16:00–17:00, in person at NJORD, Aarhus. A written acceptance sent by Yehor in
+his own words to the booking party is stronger evidence than any calendar
+artefact, and it is now on record from the source rather than from a report.
+
+**Row 4's table Status is unchanged and stays OPEN.** This is stated explicitly
+because the two are easy to conflate: a scheduled scoping meeting is not a
+professionally-accountable review. Row 4 closes when NJORD's written Phase-1
+answer lands, not before, and the hard boundary is untouched — no GitHub App
+public flip without Gate-1 clearing **and** Yehor's separate explicit "go."
+
+**One narrower item is NOT closed by this, and is separated out rather than
+folded in.** The flag raised earlier in Session 4.18 was that no NJORD entry
+appears on the only calendar reachable from this session
+(`egorka30001@gmail.com`; 26 August holds only unrelated events). The email
+evidence proves the meeting is agreed. It does not prove a calendar reminder
+exists anywhere. NJORD did send an `invite.ics` (separate thread
+`1a01f0a429cc13b3`, "Møde mellem Fixprove og NJORD", 2026-08-20 11:59:15 UTC,
+cc `malped@njordlaw.com`), addressed to `yehor.callmedai@gmail.com`, whose
+calendar is not connected to this session. Whether that invite was accepted is
+**still unverifiable from here** and remains Yehor's to confirm. Recording the
+status question as closed while leaving the reminder question open is the
+accurate split; collapsing them would overclaim.
+
+Unrelated and also left open: a calendar entry titled "Freja work 27.08" is
+recorded as 26 Aug 08:00 → 27 Aug 09:00, a 25-hour block that nominally spans
+the NJORD slot. It reads as a date-entry slip for a 27 August event. Flagged
+for Yehor, no action taken.
+
+Recorded by Claude (Node 1), Session 4.18, 2026-08-21.

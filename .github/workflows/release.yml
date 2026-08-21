@@ -40,6 +40,73 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # #KS-TRACE: S4.18-VERSION-SYNC-GATE | requirement: a release must never
+      # publish when the two version-tracked manifests disagree. Session 4.17's
+      # v0.1.11 bumped cli/package.json but not engine/python/pyproject.toml,
+      # so publish-npm shipped 0.1.11 while publish-pypi failed on a duplicate
+      # 0.1.10 -- leaving the registries out of step and burning 0.1.11 as a
+      # permanently skipped npm version (registries refuse version reuse, so
+      # the mistake was not correctable in place).
+      # assumption: cli/package.json and engine/python/pyproject.toml are the
+      # ONLY two manifests whose version reaches a public registry. The root,
+      # worker/, app/ and web/ package.json files are private workspace stubs
+      # pinned at 0.0.x and are deliberately NOT checked -- checking them would
+      # produce a permanently failing gate.
+      # Placed as the first step of the first job so a mismatch fails the run
+      # in seconds, before any build, test, or registry interaction.
+      # | test: Session 4.18 local adversarial harness -- matched pair passes;
+      # mismatched pair, absent [project] version, and comment-only version
+      # each exit 1. See KS-REPORT-4.18 section 3.
+      - name: Verify manifest versions are in sync
+        run: |
+          set -e
+          python3 - << 'PYEOF'
+          import json, re, pathlib
+
+          npm_manifest = "cli/package.json"
+          py_manifest = "engine/python/pyproject.toml"
+
+          npm_version = json.loads(
+              pathlib.Path(npm_manifest).read_text(encoding="utf-8")
+          )["version"]
+
+          # Scoped to the [project] table on purpose: a bare `version = "..."`
+          # regex would also match a dependency pin or a figure inside a
+          # comment, and pyproject.toml here carries both.
+          py_version = None
+          table = None
+          for line in pathlib.Path(py_manifest).read_text(encoding="utf-8").splitlines():
+              stripped = line.strip()
+              if stripped.startswith("#"):
+                  continue
+              if stripped.startswith("[") and stripped.endswith("]"):
+                  table = stripped[1:-1]
+                  continue
+              if table == "project":
+                  match = re.match(r'version\s*=\s*["\']([^"\']+)["\']', stripped)
+                  if match:
+                      py_version = match.group(1)
+                      break
+
+          if py_version is None:
+              print(f"::error::no [project] version found in {py_manifest}")
+              raise SystemExit(1)
+
+          print(f"{npm_manifest}           = {npm_version}")
+          print(f"{py_manifest} = {py_version}")
+
+          if npm_version != py_version:
+              print(
+                  f"::error::manifest version mismatch: {npm_manifest} is "
+                  f"{npm_version} but {py_manifest} is {py_version}. Bump BOTH "
+                  f"manifests before tagging -- publishing now would put the "
+                  f"two registries permanently out of step."
+              )
+              raise SystemExit(1)
+
+          print(f"OK: both manifests agree at {npm_version}")
+          PYEOF
+
       - uses: pnpm/action-setup@v4
         with:
           version: 9.12.0
