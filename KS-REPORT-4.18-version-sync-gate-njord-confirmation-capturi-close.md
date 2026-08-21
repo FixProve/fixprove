@@ -139,3 +139,52 @@ sound by every check available inside this sandbox, and it has still never
 been proven inside the one environment that actually matters. Both things
 are true at once, and this report says so rather than picking the more
 comfortable one.
+
+## 7. Post-close addendum (2026-08-21, same day) — Kondrup sent; a relayed critique verified, found partly right
+
+Session 4.18 was closed (§§1–6 above, `c22e9c4` pushed, CI green) before
+Yehor took the drafted Kondrup outreach to a separate guide-chat session
+for review and sent it. That activity is recorded here as an addendum,
+per this project's append-only convention, rather than by rewriting §§1–6.
+
+**Kondrup outreach: SENT — Yehor-reported, not independently verified by
+this session.** No LinkedIn access exists here; this status is recorded on
+Yehor's word, exactly as this project has recorded every other LinkedIn-
+only action (WasteHero/Kamal, Cernel) when no screenshot was available to
+close the gap further. The sent text differs materially from both options
+in `Kondrup-outreach-draft-2026-08-21.md` — independently composed in the
+guide-chat session, then revised for LinkedIn's 200-character connection-
+note limit. Full text and reasoning trail archived in that file's own
+addendum, added the same way.
+
+**The guide-chat's fact-check of its own instruction, and of this draft, was
+substantively correct — verified against this project's record, not
+accepted on trust.** Two things were checked:
+
+1. Its refusal to log the branch-protection bypass as newly observed was
+   *its own instruction to itself*, correctly reversed against §3, defect 4
+   of this report — the same pattern already recorded there, now
+   self-applied. No new verification needed; already covered.
+2. Its claim that this draft's Option B phrase "static analysis only" was
+   inconsistent with this project's D2/Option A positioning decision was
+   checked against `KS-REPORT-4.14-positioning-and-fork-decisions.md`
+   directly. **Grounded, not invented** — that report's own verification
+   table records a deliberate live-copy search for "static analysis" as a
+   term Option A moved away from. **But its scope, as recorded, was
+   `web/src`, `README.md`, and `cli/README.md` only.** It was never
+   extended to outreach drafts, and two already-sent, already-public
+   artifacts from this same week's GTM push —
+   `LINKEDIN-CAROUSEL-FINAL-DRAFT-2026-08-19.md` and
+   `Tier1-outreach-drafts-2026-08-19.md` — already use the exact phrase
+   flagged here. The preference is real; the premise that outreach copy
+   has consistently honored it is not, and is corrected here rather than
+   left standing uncorrected in the record.
+
+**Net effect: no defect requiring a fix.** The inconsistent phrase lived
+only in this draft's unsent Option B — the text actually sent never
+contained it. The two historical artifacts using "static analysis" are
+already public and not retroactively editable; they are noted as a minor,
+pre-existing inconsistency in the project's outreach copy, not something
+this addendum claims to have resolved.
+
+Recorded by Claude (Node 1), Session 4.18 (post-close addendum), 2026-08-21.

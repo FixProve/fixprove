@@ -1,19 +1,23 @@
 NEXT SESSION — 4.19 — "NJORD's written answer is the headline watch;
-Kondrup send and the version-sync gate's first live proof are the only
-owed tasks"
+watch four GTM threads for replies; the version-sync gate's first live
+proof is the only owed technical task"
 
-Written 2026-08-21 at the close of Session 4.18. Read the git-state section
-below rather than assuming — this prompt asserts repo STATE and is
-untrusted until checked against the mount, same as every prior starting
-prompt in this project. Session 4.18 itself demonstrated why three times
-over: its own starting prompt (4.18's) carried a one-commit-stale HEAD SHA,
-an undercounted CA-entry tally, and a stale claim about a PyPI API outage —
-all three caught only by re-verifying fresh rather than trusting the
-prompt. Separately, a relayed brief mid-session asserted the
-branch-protection bypass was "newly observed, undecided" when it had
-actually been formally decided five sessions earlier — caught only by
-grepping the project's own prior record before acting, not by trusting the
-brief. Re-verify everything below fresh.
+Written 2026-08-21, revised same day after Session 4.18 closed twice — a
+first close (commit `c22e9c4`) and a post-close addendum batch after Yehor
+took the drafted Kondrup outreach to a separate guide-chat session and sent
+it. Read the git-state section below rather than assuming — this prompt
+asserts repo STATE and is untrusted until checked against the mount, same
+as every prior starting prompt in this project. Session 4.18 demonstrated
+why four separate times in one day: its own starting prompt carried a
+one-commit-stale HEAD SHA, an undercounted CA-entry tally, and a stale
+claim about a PyPI API outage; a relayed brief mid-session asserted the
+branch-protection bypass was "newly observed, undecided" when it had been
+formally decided five sessions earlier; and a second relayed critique
+(from the guide-chat session, post-close) correctly flagged a real
+inconsistency but overstated how consistently the project had already
+applied it — caught only by checking `KS-REPORT-4.14-*.md` directly, not
+by accepting the critique's framing whole. Re-verify everything below
+fresh, including this list.
 
 SESSION START (Keystone Stage 1 — Intake):
 
@@ -22,26 +26,31 @@ SESSION START (Keystone Stage 1 — Intake):
    this time — Session 4.18 only had `egorka30001@gmail.com`, which left
    one genuine gap (see item 7 below).
 2. `.git/*.lock` check — rename away (mv, never rm). Reappeared repeatedly
-   throughout Session 4.18 (at least 5 times across the build/commit/log
-   cycle); the stale-lock accumulation in `.git/` continues to grow.
-   Treat a fresh appearance at 4.19's open as completely normal — still
-   not urgent, still not blocking.
+   throughout Session 4.18 (at least 6 times across the build/commit/log/
+   addendum cycle); the stale-lock accumulation in `.git/` continues to
+   grow. Treat a fresh appearance at 4.19's open as completely normal —
+   still not urgent, still not blocking.
 3. Read `MEMORY/state.md` in full and answer its 3 reload questions before
-   doing anything else. Five prior snapshots exist alongside it
+   doing anything else. Six prior snapshots exist alongside it
    (`state.superseded-4.13-snapshot.md` through
-   `state.superseded-4.17-close-snapshot.md`) — none is authoritative;
-   only the un-suffixed `state.md` is current.
+   `state.superseded-4.18-interim-snapshot.md`) — none is authoritative;
+   only the un-suffixed `state.md` is current. **The 4.18-interim one is
+   worth noting specifically: it was this session's own first close,
+   superseded hours later the same day by genuinely new information, not
+   by a mistake.**
 4. Read `PITFALL-WATCHLIST.md`'s tail and `MEMORY/critical-actions.md`'s
-   tail (the Session 4.18 entries — four of them, recount fresh, don't
-   trust that number either) before doing anything with either file.
+   tail (the Session 4.18 entries — five of them as of this writing,
+   recount fresh, don't trust that number either) before doing anything
+   with either file.
 5. Verify all refs, don't assume:
-   * `main` and `origin/main` — expect `994e742be35de5f4c38a20175ad98a3aba09152f`
-     (Session 4.18's version-sync-gate + NJORD-confirmation commit). Re-verify
-     fresh via `git fetch` + `git rev-parse`; do not trust this prompt's SHA
-     if it's stale. **Also check whether Session 4.18's close-out commit
-     (session log, KS-Report, PROGRESS.md, SESSION-LOG-INDEX.md — committed
-     locally at 4.18's close but not confirmed pushed in this prompt) has
-     landed on `origin/main` or is still sitting local-only.**
+   * `main` and `origin/main` — as of this prompt's writing, `main` is
+     `c22e9c4712b708b14155bc8c3f23fabcbe5193c7`, but **a second small
+     commit is owed** — the KS-Report and session-log addenda recording
+     the Kondrup send were written to the mount after `c22e9c4` was
+     pushed, and were NOT yet committed when this prompt was written.
+     **Check whether that second commit exists and is pushed.** If it
+     isn't, that's 4.19's first housekeeping task, not a blocker to
+     anything else — see item 9 below.
    * `drafts/operating-plan-d17-d60`, `drafts/row4-legal-drafts`,
      `held-back-pile-2026-07-28` — not touched in 4.17 or 4.18, not
      re-verified in either; check fresh if relevant.
@@ -66,21 +75,33 @@ SESSION START (Keystone Stage 1 — Intake):
    reading the primary Gmail thread directly (not a screenshot alone):
    NJORD's booking and Yehor's written acceptance, scoping-brief PDF
    attached, all confirmed at the source (`1a01a8267835adfc`). **One
-   narrower question was deliberately left open, not resolved:** whether
-   the separate calendar invite (`invite.ics`, thread `1a01f0a429cc13b3`)
-   was ever accepted on `yehor.callmedai@gmail.com`'s calendar — that
-   account's calendar was not reachable from Session 4.18. If Calendar
-   access now covers that account, check it. If today's date is on or
-   after 26 Aug, check email for any follow-up (meeting notes, a written
-   answer, a rescheduling). If today's date is before 26 Aug, no lawyer
-   action is expected yet — don't chase.
-8. Check Gmail more broadly for anything new: AarhusJS (organizers may have
-   settled on a talk format), Cernel, WasteHero (this channel is LinkedIn,
-   which this sandbox cannot reach directly — ask Yehor for a screenshot if
-   a reply is suspected, but independently verify any screenshot's claims
-   against a reachable primary source wherever one exists, per Session
-   4.18's standing practice, not 4.18's own precedent of accepting a
-   screenshot as sufficient on its own).
+   narrower question remains deliberately left open, not resolved:**
+   whether the separate calendar invite (`invite.ics`, thread
+   `1a01f0a429cc13b3`) was ever accepted on `yehor.callmedai@gmail.com`'s
+   calendar — that account's calendar was not reachable from Session 4.18.
+   If Calendar access now covers that account, check it. If today's date
+   is on or after 26 Aug, check email for any follow-up (meeting notes, a
+   written answer, a rescheduling). If today's date is before 26 Aug, no
+   lawyer action is expected yet — don't chase.
+8. **Check all four GTM outreach threads for replies** — Cernel, AarhusJS,
+   WasteHero, and **Kondrup (new this session — sent, not yet confirmed
+   received or replied to)**. Kondrup's channel is LinkedIn, which this
+   sandbox cannot reach directly — ask Yehor for a screenshot if a reply is
+   suspected, but independently verify any screenshot's claims against a
+   reachable primary source wherever one exists. This is now a
+   three-times-demonstrated project rule (the NJORD screenshot, the
+   branch-protection framing, and the "static analysis consistency" claim
+   all needed independent checking before being trusted whole) — not a
+   one-off habit.
+9. **Housekeeping: commit and push the Kondrup-send addenda, if not already
+   done.** Two git-tracked files need a small commit:
+   `KS-REPORT-4.18-version-sync-gate-njord-confirmation-capturi-close.md`
+   (§7 addendum) and the Session 4.18 session log (trailing addendum).
+   `MEMORY/critical-actions.md` is gitignored, no commit needed for it.
+   `Kondrup-outreach-draft-2026-08-21.md` stays uncommitted by existing
+   convention (matches AarhusJS's and Cernel's drafts) even though it's
+   now sent. Verify per-job CI green on whatever commit lands this, same
+   as every push this project.
 
 ## What actually changed in Session 4.18 (don't re-derive, read this instead)
 
@@ -107,20 +128,33 @@ SESSION START (Keystone Stage 1 — Intake):
   These are two different facts — don't conflate them again. The written
   Phase-1 answer, not the meeting itself, is what closes Row 4.
 - **Capturi is closed as a GTM question.** 100%-owned by Puzzel since 22
-  Nov 2024. Do not treat it as a separate outreach target again. The one
-  live item from it is the Kondrup draft (see below).
-- **Kondrup outreach: DRAFTED, saved to
-  `Kondrup-outreach-draft-2026-08-21.md`, NOT sent, NOT committed** (matches
-  the existing convention for uncommitted outreach drafts, same as
-  AarhusJS's and Cernel's). Two ready-to-paste options inside: a 213-char
-  LinkedIn connection note and a longer first-message text. **Ask Yehor
-  whether to send** — no urgency, this was backlog, not a live thread.
-- **One open anomaly, low priority:** `6d251c5`'s `ci.yml` run
+  Nov 2024. Do not treat it as a separate outreach target again.
+- **Kondrup outreach: SENT.** Via LinkedIn, Yehor-reported, **not
+  independently verified by this session** (no LinkedIn access here —
+  same limitation as every prior LinkedIn-channel action this project has
+  recorded). Sent via a connection note revised in a separate guide-chat
+  session — the final text differs materially from this session's own
+  draft; both are archived, with the actual sent text and full reasoning
+  trail, in `Kondrup-outreach-draft-2026-08-21.md`'s own addendum. **No
+  action needed until/unless he replies.**
+- **A guide-chat critique of this session's own draft was checked against
+  the project's record, not accepted whole.** It correctly flagged this
+  session's Option B for using "static analysis" — a phrase Session
+  4.14's D2 positioning decision moved away from — and that check is real
+  (verified directly against `KS-REPORT-4.14-*.md`). But its scope, as
+  actually recorded, was `web/src`/`README.md`/`cli/README.md` only, never
+  outreach drafts, and two already-sent artifacts from this same week's
+  GTM push (`LINKEDIN-CAROUSEL-FINAL-DRAFT-2026-08-19.md`,
+  `Tier1-outreach-drafts-2026-08-19.md`) already use the same phrase. The
+  preference is real; the premise that outreach copy had already been
+  consistent about it wasn't, and the record now says so precisely. No
+  live harm — the flagged phrase was never in the text actually sent.
+- **One open anomaly, low priority, unchanged:** `6d251c5`'s `ci.yml` run
   (`32378841176`) showed a stuck "Status: In progress" with no job
-  durations, checked fresh a day after that push. Not chased in 4.18
-  because the commit itself is moot (superseded same-session by
-  `a0932c7`). If it's still stuck at 4.19's open, or if the pattern
-  recurs on a commit that matters, look into it properly.
+  durations, checked a day after that push. Not chased in 4.18 because the
+  commit itself is moot (superseded same-session by `a0932c7`). If it's
+  still stuck at 4.19's open, or the pattern recurs on a commit that
+  matters, look into it properly.
 
 ## Live clocks
 
@@ -134,10 +168,12 @@ SESSION START (Keystone Stage 1 — Intake):
 
 ## Priority for Session 4.19, in order
 
-1. Check for NJORD's written answer (if the meeting has happened by session
-   time) or simply confirm the meeting is still on (if it hasn't).
-2. Check AarhusJS/Cernel/WasteHero for any replies since 4.18's close.
-3. Ask Yehor whether to send the Kondrup draft — small, scoped, ready to go.
+1. Commit and push the Kondrup-send addenda if not already done (item 9
+   above) — small, mechanical, no decision required.
+2. Check for NJORD's written answer (if the meeting has happened by
+   session time) or simply confirm the meeting is still on (if it hasn't).
+3. Check all four GTM threads (Cernel, AarhusJS, WasteHero, Kondrup) for
+   any replies since 4.18's close.
 4. If a release is planned for any reason, watch the version-sync gate's
    first live run closely — job-level, not run-level, per this project's
    standing rule.

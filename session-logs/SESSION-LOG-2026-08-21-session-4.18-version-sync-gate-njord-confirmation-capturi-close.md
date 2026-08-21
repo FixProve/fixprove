@@ -200,3 +200,27 @@ The close-out artifacts (session log, KS-Report, `PROGRESS.md`,
 `SESSION-LOG-INDEX.md`) are committed locally alongside this entry but
 **not yet pushed** — that step, per this project's standing pattern, is
 Yehor's.
+
+## Post-close addendum (same day) — Kondrup sent, one relayed critique verified
+
+After this session's own close (§ above, `c22e9c4` pushed, CI green),
+Yehor took the Kondrup draft to a separate guide-chat session and sent it.
+**Kondrup: SENT, Yehor-reported, not independently verified** (no LinkedIn
+access here) — final text differs from this session's draft, composed and
+revised in the guide-chat session for LinkedIn's 200-char limit.
+
+That session's own fact-check flagged this draft's Option B for using
+"static analysis," a phrase Session 4.14's D2 positioning decision moved
+away from. Checked against `KS-REPORT-4.14-*.md` directly: the underlying
+preference is real, but its recorded scope (`web/src`, `README.md`,
+`cli/README.md`) never covered outreach drafts — and two already-sent
+artifacts from this week's own GTM push (`LINKEDIN-CAROUSEL-FINAL-
+DRAFT-2026-08-19.md`, `Tier1-outreach-drafts-2026-08-19.md`) already use
+the same phrase. Correct reasoning, incomplete premise about consistency —
+recorded precisely rather than either dismissed or accepted whole. No live
+harm: the flagged phrase was never in the text actually sent.
+
+Full detail in `KS-REPORT-4.18-*.md` §7 and `Kondrup-outreach-draft-2026-
+08-21.md`'s own addendum.
+
+Recorded by Claude (Node 1), Session 4.18 (post-close addendum), 2026-08-21.
