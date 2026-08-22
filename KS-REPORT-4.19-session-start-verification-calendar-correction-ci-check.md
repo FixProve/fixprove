@@ -178,3 +178,32 @@ first live proof remains deferred to whenever a release is next tagged.
 
 Nothing this session touched Stripe, published pricing, or the GitHub
 App's installation-visibility setting.
+
+## 8. Post-push addendum (2026-08-22, same day) — `c498b6b` pushed; CI job-level status independently confirmed via `gh`, superseding §4's `web_fetch`-scrape caveat for this SHA
+
+Yehor pushed this session's own commit (`c498b6b`) himself, per the
+standing CA-5 convention — `origin/main` confirmed matching local HEAD
+via his own `git log -1 --oneline origin/main`, with the expected
+`Bypassed rule violations for refs/heads/main` line present, same as
+every prior owner direct-push this project has recorded.
+
+**CA-5's mandatory post-push per-job CI check — done, via the structured
+`gh` path this report's §4 flagged as the gold standard this session
+couldn't reach directly.** Run first while genuinely in progress
+(`status: "in_progress"`, both jobs, `conclusion` correctly empty — not
+a stall, just too early), then re-checked ~60 seconds later:
+
+```
+{ "name": "build", "status": "completed", "conclusion": "success" }
+{ "name": "test-python", "status": "completed", "conclusion": "success" }
+```
+
+Both jobs `completed`/`success`. This is the structured, non-scraped
+confirmation §4 noted as unavailable to this sandbox — Yehor ran it
+directly and reported the exact JSON, not a paraphrase. **§4's
+`web_fetch`-scrape caveat is superseded for `c498b6b` specifically**; the
+underlying sandbox limitation (no `api.github.com`/`gh` reachability from
+here) is unchanged and still applies to future sessions' own checks.
+
+Recorded by Claude (Node 1), Session 4.19 (post-push addendum),
+2026-08-22.
