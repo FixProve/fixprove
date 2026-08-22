@@ -30,26 +30,35 @@ SESSION START (Keystone Stage 1 — Intake):
    only the un-suffixed `state.md` is current.
 
 4. **Verify `main` and `origin/main` fresh, don't assume from this
-   prompt.** At the time this prompt was written, Session 4.19's own new
-   files (`KS-REPORT-4.19-*.md`, its session log, `SESSION-LOG-INDEX.md`
-   and `NEXT-SESSION-4.20-STARTING-PROMPT.md` itself) were staged for a
-   local commit at session close, with `git push` handed to Yehor as a
-   copy-paste command — **not run by the assistant**. Check whether that
-   push happened. If `origin/main` is still behind local `main`, that is
-   this session's first housekeeping item — not a blocker to anything
-   else, and not a defect, since push has always been Yehor's own hands
-   per the CA-5 convention.
+   prompt.** Two commits landed locally at Session 4.19's close:
+   `c498b6b` (the session's own KS-Report/log/index/next-prompt) and
+   `9c9b413` (a same-day post-push addendum recording the `gh`-verified
+   CI check on `c498b6b`). Yehor pushed `c498b6b` himself and confirmed
+   it live. **`9c9b413` was written and committed locally by the
+   assistant but was NOT yet handed to Yehor as a push command before
+   this prompt was finalized** — caught only by this prompt's own
+   closing double-check, one prompt-cycle late. Check `git log -1
+   --oneline origin/main`: if it reads `c498b6b`, `9c9b413` is still
+   owed — push it (see the copy-paste block Yehor was given alongside
+   this prompt). If it already reads `9c9b413`, this item is done and
+   was simply completed after this file was last saved — don't re-flag
+   it as still open.
 
 5. **CI job-level check on whatever the new HEAD is**, per the standing
-   CA-5 mandatory post-push obligation — job-level, not run-level. Note:
-   the last verified CI check (Session 4.19, on `a3a10de`) used a
-   `web_fetch` scrape of GitHub's rendered Actions page, not the GitHub
-   API — `api.github.com` remains unreachable from this sandbox. If a
-   first fetch of the general Actions run-list looks short (missing
-   recent commits), **don't conclude CI didn't run** — re-fetch the
-   workflow-scoped URL with a cache-busting parameter before drawing any
-   conclusion. This was a real, reproducible gotcha in Session 4.19, not
-   a one-off.
+   CA-5 mandatory post-push obligation — job-level, not run-level.
+   `c498b6b`'s CI was independently confirmed via the structured `gh run
+   view --json jobs` path (both jobs `status:completed`/
+   `conclusion:success` — see `KS-REPORT-4.19-*.md` §8), not just the
+   `web_fetch` scrape this sandbox falls back on when `gh`/
+   `api.github.com` aren't reachable from here. `9c9b413` (docs-only,
+   same shape as every other doc-only push this project has made) has
+   **not yet had its own CI check run or confirmed** as of this prompt's
+   writing — do that once it's pushed, same job-level discipline, don't
+   assume it inherits `c498b6b`'s green status. If a first fetch of the
+   general Actions run-list looks short (missing recent commits),
+   **don't conclude CI didn't run** — re-fetch the workflow-scoped URL
+   with a cache-busting parameter before drawing any conclusion. This was
+   a real, reproducible gotcha in Session 4.19, not a one-off.
 
 6. **Check for NJORD's written Phase-1 answer.** The meeting is
    **Wednesday 26 August 2026, 16:00–17:00**, in person, at NJORD's Aarhus
@@ -106,6 +115,13 @@ SESSION START (Keystone Stage 1 — Intake):
 - **No CA-class action was taken or required this session.** No money,
   repo-visibility, in-name publishing, report/log/MEMORY deletion, or
   instruction changes occurred.
+- **A same-day post-push addendum (`9c9b413`) then caught its own small
+  gap:** the assistant committed the addendum locally but, in the same
+  turn, failed to hand Yehor a push command for it — surfaced only by a
+  closing double-check pass, not by any external report. Recorded here
+  precisely so this pattern (a committed-but-unpushed follow-up slipping
+  past its own close) is named, not just fixed silently. See item 4
+  above for its exact resolution status.
 
 ## Live clocks
 
