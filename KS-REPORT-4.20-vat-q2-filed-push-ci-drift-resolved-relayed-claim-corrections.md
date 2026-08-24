@@ -209,3 +209,39 @@ live proof remains deferred to whenever a release is next tagged.
 
 Nothing this session touched Stripe, published pricing, or the GitHub
 App's installation-visibility setting.
+
+## 8. Post-push addendum (2026-08-24, same day) — `5a9283f` pushed; CI job-level status confirmed via a new fetch path after the standard one came back stale
+
+Yehor pushed this session's own close-out commit (`5a9283f`) himself,
+per the standing CA-5 convention — `origin/main` confirmed matching
+local `main` via a fresh `git fetch` + `git log -1 --oneline` on both
+refs, with the expected `Bypassed rule violations for refs/heads/main`
+line present, same as every prior owner direct-push this project has
+recorded.
+
+**CA-5's mandatory post-push per-job CI check — done, via a fetch path
+this report hadn't needed before.** The usual workflow-scoped,
+cache-busted run-list URL (`actions/workflows/ci.yml?query=branch%3Amain&_cb=...`)
+came back listing only up to CI #68 (`adca3bc`) — missing the newest
+run even with a fresh cache-busting parameter, a stronger version of the
+stale-cache gotcha first logged in Session 4.19. Rather than conclude CI
+hadn't run, the commit's own checks page
+(`github.com/FixProve/fixprove/commit/5a9283f.../checks`) was fetched
+instead, and resolved it immediately: run `32745343428` (CI #69),
+**Status Success**, `build` 49s, `test-python` 39s, both green, only the
+standing benign Node.js-20 deprecation annotations. **New standing
+gotcha, recorded in `NEXT-SESSION-4.21-*.md`: when the cache-busted
+workflow-list page still doesn't surface the newest run, try the
+commit's own `/checks` page next, before concluding anything about CI
+status.**
+
+`NEXT-SESSION-4.21-STARTING-PROMPT.md` items 4 and 5 were updated in
+place to reflect this confirmed-pushed, confirmed-green state rather than
+being left describing a "still owed" push step that no longer applies —
+the same category of gap this session opened by finding and fixing in
+`state.md` for `9c9b413`. Session 4.20 is now fully closed with no
+loose ends: nothing owed by the assistant, nothing owed by Yehor beyond
+showing up to NJORD.
+
+Recorded by Claude (Node 1), Session 4.20 (post-push addendum),
+2026-08-24.

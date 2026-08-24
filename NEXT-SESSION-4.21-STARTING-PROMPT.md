@@ -34,26 +34,27 @@ SESSION START (Keystone Stage 1 — Intake):
    only the un-suffixed `state.md` is current.
 
 4. **Verify `main` and `origin/main` fresh, don't assume from this
-   prompt.** At Session 4.20's close, `origin/main = main = adca3bc`,
-   confirmed via `git fetch` + `git log -1 --oneline` on both refs. This
-   session's own close-out files (`KS-REPORT-4.20-*.md`, the 4.20 session
-   log, `SESSION-LOG-INDEX.md`, `PROGRESS.md`, this file) were staged
-   locally but **not yet committed or pushed** as of this prompt being
-   written — check `git log -1 --oneline` fresh; if it still reads
-   `adca3bc` with these files untracked/uncommitted, the commit-and-push
-   step is still owed. See the copy-paste block handed to Yehor alongside
-   this close.
+   prompt.** At the time this prompt was finalized (2026-08-24, same
+   session, post-push), `origin/main = main = 5a9283f`, confirmed via
+   `git fetch` + `git log -1 --oneline` on both refs — Yehor pushed
+   Session 4.20's own close-out commit (`5a9283f`: `KS-REPORT-4.20-*.md`,
+   the 4.20 session log, `SESSION-LOG-INDEX.md`, this file) himself, same
+   turn, `Bypassed rule violations for refs/heads/main` present as
+   expected. **Nothing should be owed here** — re-verify fresh anyway,
+   don't take this file's word for it.
 
 5. **CI job-level check on whatever the new HEAD is**, per the standing
    CA-5 mandatory post-push obligation — job-level, not run-level, same
-   as every prior session. `adca3bc`'s CI was confirmed via the rendered
-   run page (`api.github.com`/`gh` remain unreachable from this sandbox,
-   consistent with every prior session): CI #68, `build` 52s,
-   `test-python` 46s, both green. **This session's close-out commit (once
-   pushed) has not yet had its own CI check run or confirmed** — do that
-   once it's pushed, same job-level discipline, don't assume it inherits
-   `adca3bc`'s green status just because it's a docs-only commit (every
-   prior docs-only push has still gotten its own check).
+   as every prior session. `5a9283f`'s CI was confirmed via the commit's
+   own `/checks` page after the workflow-scoped run-list page came back
+   stale/missing the newest run even with a cache-busting parameter
+   (`api.github.com`/`gh` remain unreachable from this sandbox, consistent
+   with every prior session) — **new gotcha, worth carrying forward: when
+   the cache-busted workflow-list page still doesn't show the newest run,
+   try `github.com/<owner>/<repo>/commit/<sha>/checks` instead, which
+   resolved it immediately this time.** CI #69, run `32745343428`:
+   **Status Success**, `build` 49s, `test-python` 39s, both green, only
+   the standing benign Node.js-20 deprecation annotations.
 
 6. **Check for NJORD's written Phase-1 answer.** The meeting was
    **Wednesday 26 August 2026, 16:00–17:00**, in person, at NJORD's Aarhus
@@ -137,9 +138,10 @@ SESSION START (Keystone Stage 1 — Intake):
 
 ## Priority for Session 4.21, in order
 
-1. Confirm Session 4.20's close-out files landed on `origin/main` (or
-   push them if Yehor hasn't yet) — small, mechanical, no decision
-   required. See item 4 above.
+1. **Re-verify `origin/main = 5a9283f`** (or later) and CI #69's
+   job-level Success fresh — this prompt records it as already done and
+   confirmed, but re-check rather than trust the file, same standing rule
+   as always.
 2. Check whether the NJORD meeting (26 Aug) has happened; if so, watch
    for a written Phase-1 answer.
 3. Check all four GTM threads for replies; consider whether Yehor wants
