@@ -7,9 +7,13 @@ dropped out of `state.md` between Session 4.20's interim snapshot and its
 TRUE close, causing this session's own opening pass to re-flag it. Fixed
 at the root — the resolution now lives as a standalone DURABLE NOTE, not
 narrative — not just re-settled by trust. No code touched, no calendar
-edit made. Every number below was correct as of 2026-08-25 — recompute
-the live clocks fresh at session open rather than trusting this file,
-same standing rule as every prior starting prompt in this project.
+edit made. **Post-push addendum, same day: Yehor pushed the close
+himself (`origin/main = main = 48181d4`), and CI #71 job-level Success
+was confirmed fresh (`build` 49s, `test-python` 39s, both green) — see
+items 4–5 below.** Every number below was correct as of 2026-08-25 —
+recompute the live clocks fresh at session open rather than trusting
+this file, same standing rule as every prior starting prompt in this
+project.
 
 SESSION START (Keystone Stage 1 — Intake):
 
@@ -39,27 +43,27 @@ SESSION START (Keystone Stage 1 — Intake):
    third re-litigation doesn't happen.
 
 4. **Verify `main` and `origin/main` fresh, don't assume from this
-   prompt.** At the time this prompt was finalized (2026-08-25, same
-   session, pre-push), local `main` carries one new commit on top of
-   `993a31e`, holding Session 4.21's own close (`KS-REPORT-4.21-*.md`,
-   this session's log, `SESSION-LOG-INDEX.md`, this file — `PROGRESS.md`
-   and `MEMORY/state.md` are both gitignored, mount-only, not part of
-   that commit), not yet pushed — Yehor pushes it himself per the
-   standing CA-class convention. **Don't trust any specific hash quoted
-   for this not-yet-pushed commit — a commit's own hash can't be known
-   with certainty from inside a file that becomes part of it. Re-verify
-   fresh: run `git log -1 --oneline` for the true hash, and check
-   whether `origin/main` already matches local `main`, or whether a push
-   is still owed.**
+   prompt.** **Post-push addendum, same day (2026-08-25): Yehor pushed
+   this close himself — `origin/main = main = 48181d4`, confirmed fresh
+   via `git fetch` + `git log -1 --oneline` on both refs, with the
+   expected "Bypassed rule violations for refs/heads/main" line present,
+   same as every prior owner direct-push this project has recorded.**
+   Holds Session 4.21's own close (`KS-REPORT-4.21-*.md`, this session's
+   log, `SESSION-LOG-INDEX.md`, this file — `PROGRESS.md` and
+   `MEMORY/state.md` are both gitignored, mount-only, not part of that
+   commit). **Re-verify fresh anyway, don't take this addendum's word for
+   it** — a further commit could exist by the time you read this.
 
-5. **CI job-level check on whatever the new HEAD is**, per the standing
-   CA-5 mandatory post-push obligation — job-level, not run-level, same
-   as every prior session. Use the commit's own `/checks` page
-   (`github.com/<owner>/<repo>/commit/<sha>/checks`) and each job's own
-   run page if the workflow-scoped run-list page comes back stale/cached
-   — the pattern from Sessions 4.20 and 4.21's own closes.
-   `api.github.com`/`gh` remain unreachable from this sandbox, consistent
-   with every prior session.
+5. **CI job-level check on the new HEAD — DONE, same post-push addendum
+   (2026-08-25).** Run `32858120175` (**CI #71**) on `48181d45ab31126d
+   3b07a6da6e0a399f666f2284`, checked via the commit's own `/checks` page
+   and each job's own run page (the pattern from Sessions 4.20 and
+   4.21's own closes): `build` succeeded 49s, `test-python` succeeded
+   39s. Both green, only the standing benign Node.js-20 deprecation
+   annotation. `api.github.com`/`gh` remain unreachable from this
+   sandbox, consistent with every prior session — this was done via the
+   same `web_fetch`/Chrome-rendered-page path as always. **Re-verify
+   fresh if a further push has happened since.**
 
 6. **Check whether the NJORD meeting happened and for a written
    Phase-1 answer.** The meeting was **Wednesday 26 August 2026,
@@ -145,10 +149,10 @@ SESSION START (Keystone Stage 1 — Intake):
 
 ## Priority for Session 4.22, in order
 
-1. **Re-verify whether Session 4.21's close was pushed** — this prompt
-   records it as committed locally, push handed to Yehor; confirm
-   `origin/main` fresh rather than trust the file, same standing rule as
-   always. If pushed, run the CA-5 job-level CI check on the new HEAD.
+1. **Re-verify `origin/main = 48181d4` (or later) and CI #71's job-level
+   Success fresh** — this prompt records both as already done and
+   confirmed (see item 4/5 above), but re-check rather than trust the
+   file, same standing rule as always.
 2. Check whether the NJORD meeting (26 Aug) has happened; if so, watch
    for a written Phase-1 answer.
 3. Check all four GTM threads for replies; consider whether Yehor wants
