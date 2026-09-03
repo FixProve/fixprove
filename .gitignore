@@ -64,3 +64,15 @@ MEMORY/
 # public-status document may be published later if a public progress
 # signal is wanted; this raw dashboard stays internal-only.
 PROGRESS.md
+
+# Session-close dry-run catch, 2026-09-03 (Session 4.25): this directory
+# holds only empty (0-byte) orphaned git lock-file markers moved aside by
+# the standing "mv, never rm" lock-handling rule -- operational noise, not
+# project history. `git ls-files -- .git-stale-locks/` confirmed empty.
+.git-stale-locks/
+
+# Session-close dry-run catch, 2026-09-03 (Session 4.25): compiled JS
+# output of web/functions/*.ts (confirmed via matching source files, e.g.
+# web/functions/api/_validate.ts -> web/functions-dist/api/_validate.js).
+# A build artifact, same category as dist/ above; never tracked at HEAD.
+web/functions-dist/

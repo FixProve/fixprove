@@ -20,7 +20,7 @@ it deliberately rather than either act on it prematurely or forget about it.
 | 1 | US sales-tax-0% assumption | Before first US customer | OPEN |
 | 2 | Profit-aim declaration tension | Wind-down consideration, or annual return | OPEN |
 | 3 | VAT-period reconciliation | Registreringsbevis arrival | OPEN |
-| 4 | ToS / Privacy Policy / GDPR / liability terms unreviewed | Before public pricing | OPEN |
+| 4 | ToS / Privacy Policy / GDPR / liability terms unreviewed | Before public pricing | OPEN — Yehor self-reviewing (2026-09-03 decision), no licensed professional signoff currently planned; ivsr.dk free-clinic case K145X8 still open in parallel |
 | 5 | Formal trademark clearance search not yet performed (web-search-level due diligence only; no TESS/TSDR or attorney clearance opinion) | Before trademark filing finalized, or before public launch | OPEN — pending professional review |
 | 6 | Company NemKonto (state payment/refund account) not registered for CVR 46646223 | Before A3 live payment activation | OPEN — non-urgent, no incoming public payments yet |
 | 7 | EU Cyber Resilience Act (CRA) classification for FixProve (commercial open-core FOSS vs. exempt) not yet determined | Before Row 4 legal review concludes, and no later than the reported main-obligations date | OPEN — non-urgent, flagged only, dates below unverified against a primary source |
@@ -730,3 +730,127 @@ the NJORD slot. It reads as a date-entry slip for a 27 August event. Flagged
 for Yehor, no action taken.
 
 Recorded by Claude (Node 1), Session 4.18, 2026-08-21.
+
+### 2026-08-28 (Session 4.22) — Row 4 — NJORD scoping meeting held; verbal estimate received (figure redacted, see `MEMORY/critical-actions.md`); phased-quote strategy set; "customer" copy occurrences listed; CRA follow-up independently verified SENT
+
+**Meeting outcome, Yehor-reported (not independently verifiable beyond the
+meeting's confirmed occurrence, itself already established by the
+2026-08-21 addendum above).** NJORD gave a verbal estimate for the
+full-scope review. Per this file's own 2026-08-19/2026-08-20 precedent for a
+firm's confidential fee figure, the exact number is **not recorded in this
+public file** — held mount-only in `MEMORY/critical-actions.md`, same
+treatment as Otello's earlier quote. Described only as: a verbal
+full-package estimate, described by Yehor as substantially above the
+previously-quoted comparison figure. Nothing was committed in the meeting.
+
+**Strategy set, not yet executed (Yehor's decision, relayed):** once NJORD's
+written notes arrive, request a phased quote — Phase 1 scoped to the minimum
+legally required to open the GitHub App for free third-party installs,
+declining the full package. **NJORD's written notes have not arrived as of
+2026-08-28** — independently checked this session (`search_threads
+from:njordlaw.com after:2026/08/26`, zero hits), two days post-meeting, not
+yet treated as overdue.
+
+**"Business user" vs. "customer" framing — a free substantive takeaway from
+the meeting, per Yehor.** Prompted a listing-only grep this session (nothing
+changed): "customer" appears **6 times** across the publicly-tracked legal/
+site copy — `web/legal/terms-public.md` (4 occurrences, including its own
+defining clause, "a binding agreement between you (\"Customer\") and...");
+`web/legal/OPEN-QUESTIONS-LOG.md` (2 occurrences, already flagged internally
+as counsel-review items near T4). Zero occurrences in `web/src` or
+`README.md`. Whether to reword any of this toward "business user" is a
+future decision for Row 4's eventual review, not decided or actioned here.
+
+**Separate CRA-scoping email, independently verified SENT** 2026-08-26T16:40:58Z
+to `npd@njordlaw.com` (thread `1a03eea261e68ac5`, fetched directly via
+`get_thread`, not taken on the relay's word): asks whether NJORD covers CRA/
+product-regulation advisory work, and whether the Article 14 reporting
+question (obligations from 2026-09-11, Row 7 above) can be scoped as a small
+separate task alongside Phase 1; a briefing packet is attached. This serves
+both FixProve (this row and Row 7) and the separate Patchward product under
+the same CVR 46646223 — cross-referenced, not duplicated.
+
+**Row 4 status: unchanged, OPEN.** A verbal estimate and a strategy intent
+are not a written, professionally-accountable answer. The Day-60 ("first
+real dollar," 2026-08-29) target, recomputed fresh this session, falls due
+tomorrow with Row 4 still open — the gate will not be met by its own date on
+current facts. Recorded plainly, not softened; see the matching entry in
+`MEMORY/critical-actions.md` for full detail.
+
+Recorded by Claude (Node 1), Session 4.22, 2026-08-28.
+
+### 2026-08-28 (Session 4.22, same session, later) — Row 4 — "customer" → "business user" reclassified: a legal-text amendment, not a copy edit; deferred into NJORD Phase 1 scope
+
+**Classification, prompted by a reviewer's observation this session, checked
+against the grep result already on record above.** Of the 6 "customer"
+occurrences found, 4 sit in `web/legal/terms-public.md` — including that
+document's own defining clause ("a binding agreement between you
+(\"Customer\") and..."). A defined term inside a live, published legal
+document is not copy in the ordinary sense; changing it changes what the
+document says the counterparty's legal role is. This is **deferred into the
+NJORD Phase 1 review scope**, not treated as a standalone task someone could
+"quickly fix" outside that review. The 2 `OPEN-QUESTIONS-LOG.md` occurrences
+are internal tracking notes, not public-facing text, and follow automatically
+whenever (and if) the public term changes.
+
+**No text has been changed.** This is a classification decision only — where
+the eventual change belongs, not what it should say or when.
+
+Recorded by Claude (Node 1), Session 4.22, 2026-08-28.
+
+### 2026-08-31 (Session 4.23) — Row 4 / Row 7 — NJORD's written estimates received; Yehor's reply sent (phased FixProve terms + split CRA request); one draft defect caught and corrected
+
+**Row 4.** NJORD's promised written meeting notes arrived (2026-08-31,
+morning), with three written estimates (figures redacted here per this
+file's own 2026-08-19/2026-08-20/2026-08-28 precedent for third-party fee
+figures — full figures in `MEMORY/critical-actions.md`, mount-only): a
+full-scope FixProve terms + privacy engagement, a company-formation/
+conversion option (new ApS recommended over converting the existing
+enkeltmandsvirksomhed), and a scoped Patchward CRA Art. 14 assessment
+(Row 7). NJORD's notes also confirmed in writing their business-users-only
+recommendation, already folded into the Phase 1 ask below, and contained
+one factual drift (describing FixProve as having a web-based version — it
+does not) corrected in Yehor's reply.
+
+Yehor sent his own reply the same day (independently verified via
+`get_thread` against the actual sent message, not taken from any relayed
+account): requesting a narrower **Phase 1** scope for FixProve terms/
+privacy (legal minimum to open the GitHub App to free installs; full
+consumer-law scope deferred to an actual paid launch); parking the ApS
+question pending real demand; and — for the CRA item — asking NJORD to
+split the work into an applicability-only opinion first, procedure outline
+only if applicable, rather than approving the full quoted figure outright.
+
+**A defect caught in this session's own drafting process, worth recording
+here since it is a process lesson, not just a private-register note:** an
+earlier draft of the reply (prepared, not sent, by the assistant) had
+worded the CRA paragraph as an outright approval of the quoted figure —
+a money-commitment decision the assistant should present as a choice, not
+pre-write as a "yes." Yehor's own actual sent reply used the split-request
+framing instead. Corrected; the lesson is recorded in
+`MEMORY/critical-actions.md` in full.
+
+**Row 4 status: unchanged, OPEN.** A sent reply requesting narrower scope
+is not itself a written, professionally-accountable legal answer. Row 7
+status: unchanged, OPEN — the Art. 14 applicability question is now
+explicitly with NJORD, response pending, main-obligations date
+2026-09-11 unchanged.
+
+Recorded by Claude (Node 1), Session 4.23, 2026-08-31.
+
+### 2026-08-31 (Session 4.23, later) — Row 4 — free-clinic backstop channel (ivsr.dk) actively engaged: case opened, signed documents returned same day
+
+Independently verified via fresh Gmail search (public-safe detail, no fee
+figures involved): `ivsr.dk` opened case **K145X8** on 2026-08-29,
+requesting a signed disclaimer + privacy policy be returned within 14 days
+(deadline 2026-09-12) or the case would be closed. Signed documents were
+returned the same day, 2026-08-29, well inside the window — the case is
+not at risk of closing for non-response. Their own stated average
+processing time is 2-4 weeks. This is the backstop channel referenced in
+the 2026-08-04 entry above (demoted to backstop, ~early October estimate)
+— now formally in progress, running in parallel with the NJORD paid
+channel. **Row 4 status: unchanged, OPEN** — an open case with a
+processing-time estimate is not a written, professionally-accountable
+answer yet.
+
+Recorded by Claude (Node 1), Session 4.23, 2026-08-31.
