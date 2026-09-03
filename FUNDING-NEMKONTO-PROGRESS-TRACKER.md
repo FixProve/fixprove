@@ -170,12 +170,14 @@ Steps:
       "Your application for Tag din virksomhed til næste niveau on behalf
       of FixProve has now been received" — 2026-09-03, ~19:50. Awaiting
       review notification from Erhvervshusene project team.
-- [x] **2.4** Submitted before deadline (8 Sep 2026, 12:00) — done
-      2026-09-03, 5 days early.
 - [x] **2.3** Confirm choice: 70-hour time-log vs 8,000 kr fee. **70 hours,
       confirmed by Yehor 2026-09-02.**
-- [ ] **2.4** Submit before **8 Sep 2026, 12:00** — hard deadline.
-      `[YEHOR — ACTION]`
+- [x] **2.4** Submitted before deadline (8 Sep 2026, 12:00) — done
+      2026-09-03, 5 days early. On-screen confirmation verified directly;
+      no confirmation email found in a Gmail search as of session close
+      (2026-09-03) — may simply not have been sent yet, or may only be
+      sent after review starts. Not treated as a problem, just not
+      independently email-confirmed yet.
 - [ ] **2.5** Read the "Guide: Timeregistrering" page for exactly what
       counts as loggable time and how it's logged/audited — not yet opened.
 
