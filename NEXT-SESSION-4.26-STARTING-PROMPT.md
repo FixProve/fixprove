@@ -45,10 +45,17 @@ SESSION START (Keystone Stage 1 — Intake):
    decides — never re-litigated after.
 
 4. **Verify `main` and `origin/main` fresh, with real tools if available.**
-   As of 4.25's close: local `main` is `e28bb63`, **2 commits ahead of
-   `origin/main`** (`f3aa6cc`) — `2116ecb` (the 68-file multi-session
-   backlog reconciliation) and `e28bb63` (a same-session fixup). Neither
-   has been pushed. Confirm this is still the state before assuming it.
+   As of 4.25's true final close, `main` is **4 commits ahead of
+   `origin/main`** (`f3aa6cc`): `2116ecb` (68-file multi-session backlog
+   reconciliation), `e28bb63` (a same-session fixup), `6c69b1a` (this
+   session's own KS-Report/log/index/next-session-prompt), and a final
+   addendum-signature commit recording Yehor's accountability sign-off —
+   its exact hash isn't known at the time this sentence is written, which
+   is itself the point. **Do not trust any exact hash/count written in
+   this file** — this close proved, more than once, that a commit landing
+   after this file was drafted makes its own "commits ahead" claim stale
+   the moment it lands. Run `git log --oneline -6` and `git status` fresh
+   instead. None of these commits has been pushed as of 4.25's close.
 
 5. **Push decision — the one open governance item from 4.25's close.**
    Ask Yehor explicitly whether to push the 2 pending commits to
@@ -217,8 +224,9 @@ SESSION START (Keystone Stage 1 — Intake):
 
 1. **Confirm bash/git access status first, explicitly**, and clear any
    stale lock files before the first real git command (item 2 above).
-2. **Get Yehor's explicit push decision** on the 2 pending commits
-   (`2116ecb`, `e28bb63`) — push if approved, then verify CA-5 per-job.
+2. **Get Yehor's explicit push decision** on all pending local commits
+   (4 as of this close, per item 4 above — check fresh) — push if
+   approved, then verify CA-5 per-job.
 3. **Check NemKonto/Nordea progress and the grant confirmation-email
    gap** — both genuinely open, neither urgent yet.
 4. **Check whether Yehor has run the Stage-1 meta-prompt**; synthesize
