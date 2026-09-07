@@ -45,6 +45,12 @@ export default function DemoPage() {
           </div>
           <div>1 unresolved symbol(s) found. (exit code 1)</div>
         </div>
+        <p className="cta-note muted">
+          Full script:{" "}
+          <a href="https://github.com/FixProve/fixprove/tree/main/examples/meetup-demo-2026-09-17/python-sample">
+            examples/meetup-demo-2026-09-17/python-sample
+          </a>
+        </p>
       </section>
 
       <section>
@@ -61,6 +67,12 @@ export default function DemoPage() {
           </div>
           <div>1 unresolved symbol(s) found. (exit code 1)</div>
         </div>
+        <p className="cta-note muted">
+          Full script:{" "}
+          <a href="https://github.com/FixProve/fixprove/tree/main/examples/meetup-demo-2026-09-17/ts-sample">
+            examples/meetup-demo-2026-09-17/ts-sample
+          </a>
+        </p>
       </section>
 
       <section>
