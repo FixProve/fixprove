@@ -15,3 +15,27 @@ binding = "ASSETS"
 [[kv_namespaces]]
 binding = "WAITLIST_KV"
 id = "9ca2bd2e2db245daa777b06cae14d75f"
+
+# #KS-TRACE: SESSION-4.26-DEMO-PREVIEW | requirement: "a reversible preview
+# link for /demo that never touches production" | assumption: named
+# environments in wrangler.toml do NOT inherit top-level bindings/name/routes
+# (documented Wrangler behavior -- each environment must declare its own),
+# so deliberately NOT redeclaring [[env.preview.kv_namespaces]] here means
+# this environment has no WAITLIST_KV binding at all -- checked against
+# src/worker.ts directly: only a POST to /api/waitlist touches
+# env.WAITLIST_KV; every other path (including /demo) goes straight to
+# env.ASSETS.fetch(request) and never references the KV binding, so its
+# absence here cannot break /demo or any other route, only a
+# waitlist-signup POST made against the preview URL specifically (which
+# nothing on this page prompts a visitor to do). No custom domain/route is
+# bound here on purpose -- this environment must only ever resolve on its
+# default *.workers.dev subdomain, never on fixprove.dev. | test: manual
+# `wrangler deploy --dry-run --env preview` (see this session's report for
+# output); no live deploy attempted from this sandbox (no Cloudflare API
+# access here, and deploy is Yehor's action regardless).
+[env.preview]
+name = "fixprove-preview"
+
+[env.preview.assets]
+directory = "./out"
+binding = "ASSETS"
