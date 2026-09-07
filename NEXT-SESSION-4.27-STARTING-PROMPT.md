@@ -1,17 +1,23 @@
-NEXT SESSION — 4.27 — "Check Aarhus reply, push the demo branch, decide
-production timing — nothing else is time-pressured"
+NEXT SESSION — 4.27 — "Check Aarhus reply, decide `main` push + production
+timing — nothing else is time-pressured"
 
-Written 2026-09-07, Session 4.26 close. Session 4.26 built and verified
-a self-contained Claude Code Meetup #3 (Aarhus, 2026-09-17) demo kit
-entirely outside the repo, found and documented five real fixprove CLI
-product defects, drafted a `/demo` marketing page on an isolated branch
-with a real live-previewed Cloudflare Workers preview environment, sent
-two LinkedIn messages (Yehor's own account), and closed with a full
-formal `session-close` pass. **One commit on `draft/demo-section-4-26`
-and one on `main` sit unpushed.** Every number below was correct as of
-2026-09-07; recompute the live clocks fresh at session open rather than
-trusting this file, same standing rule as every prior starting prompt in
-this project.
+Written 2026-09-07, Session 4.26 close; **corrected same day, same
+session, in a follow-up verification pass** (see
+`KS-REPORT-4.26-addendum-1-push-confirmed.md`). Session 4.26 built and
+verified a self-contained Claude Code Meetup #3 (Aarhus, 2026-09-17)
+demo kit entirely outside the repo, found and documented five real
+fixprove CLI product defects, drafted a `/demo` marketing page on an
+isolated branch with a real live-previewed Cloudflare Workers preview
+environment, sent two LinkedIn messages (Yehor's own account), and
+closed with a full formal `session-close` pass. **`draft/demo-
+section-4-26` is now fully pushed — Yehor pushed it independently after
+this session's original close, confirmed via a fresh `git fetch` +
+`git rev-parse` in a same-session follow-up check.** Only `main`'s
+pre-existing `b6a826d` (unrelated to this session, predates it) still
+sits unpushed. Every number below was correct as of the follow-up
+check, 2026-09-07; recompute the live clocks fresh at session open
+rather than trusting this file, same standing rule as every prior
+starting prompt in this project.
 
 SESSION START (Keystone Stage 1 — Intake):
 
@@ -46,16 +52,18 @@ SESSION START (Keystone Stage 1 — Intake):
    rather than risk mixing content in a commit.
 
 4. **Verify `draft/demo-section-4-26` and `main` fresh, with real tools
-   if available.** As of 4.26's close: `draft/demo-section-4-26` has 3
-   local commits (`7aa1be7`, `962ca3d`, `3b8d7f7`, plus a 4th,
-   `dbf872e`, holding this session's own KS-Report/session-log/index
-   entry) — only the first two are on `origin/draft/demo-section-4-26`.
-   `main` sits 1 commit ahead of `origin/main` (`b6a826d`, pre-existing
-   from before Session 4.26, unchanged by it). **Do not trust these
-   exact hashes** — run `git log --oneline -6` on both refs and
-   `git rev-parse <branch> origin/<branch>` fresh instead; a push that
-   happened between sessions makes this paragraph stale the moment it
-   lands.
+   if available.** As of a same-session follow-up check (later on
+   2026-09-07, after Yehor pushed independently):
+   `draft/demo-section-4-26` = `origin/draft/demo-section-4-26` =
+   `8a6957e`, fully in sync (5 commits: `7aa1be7`, `962ca3d`, `3b8d7f7`,
+   `dbf872e`, `8a6957e`) — verified both by matching hash and by reading
+   this session's own files' content directly out of `origin`'s copy,
+   not the hash alone. `main` still sits 1 commit ahead of `origin/main`
+   (`b6a826d`, pre-existing from before Session 4.26, unrelated to and
+   unchanged by it). **Do not trust these exact hashes** — run
+   `git log --oneline -6` on both refs and
+   `git rev-parse <branch> origin/<branch>` fresh instead; time has
+   passed since this was written.
 
 5. **Check for an Aarhus Claude Code Meetup reply from Augustin
    Gottlieb before anything else time-sensitive.** A message was sent
@@ -65,19 +73,17 @@ SESSION START (Keystone Stage 1 — Intake):
    folder) is built, proof-verified, and ready regardless of the
    outcome — this is a status check, not a blocker on anything else.
 
-6. **Push decision — the two open governance items from 4.26's close.**
-   Ask Yehor explicitly: (a) whether to push
-   `draft/demo-section-4-26`'s local commits (including `dbf872e`,
-   which carries this session's own KS-Report and session log) to
-   origin now; (b) whether to push `main`'s pre-existing `b6a826d`. Both
-   were deliberately left for separate approval at 4.26's close, not
-   decided there. If yes on (a): note that pushing brings this
-   session's governance docs onto GitHub for the first time — they
-   currently exist only on the local `draft/demo-section-4-26` branch,
-   not on `main`, per 4.26's own disclosed reasoning
-   (`KS-REPORT-4.26-*.md` §6). If either push happens, run the CA-5
-   post-push per-job CI check (not just the run-level rollup) before
-   reporting it done.
+6. **Push decision — one open governance item remains, not two.**
+   `draft/demo-section-4-26` is already fully pushed (item 4 above) —
+   this session's own KS-Report and session log are on GitHub, just not
+   yet on `main` (per `KS-REPORT-4.26-*.md` §6's disclosed reasoning).
+   The one still-open ask: **whether to push `main`'s pre-existing
+   `b6a826d`.** Note `.github/workflows/ci.yml` triggers only on
+   `push`/`pull_request` to `main` — confirmed directly this session, so
+   the demo branch's own push correctly produced zero CI runs, not a
+   missed check. A push to `main` (this one, or any future merge) DOES
+   trigger CI — run the CA-5 post-push per-job check (not just the
+   run-level rollup) if it happens.
 
 7. **`/demo` production merge/deploy — Yehor's call, not urgent.** The
    page is drafted, committed, and live-previewed on an isolated
@@ -231,9 +237,10 @@ SESSION START (Keystone Stage 1 — Intake):
    stale lock files before the first real git command (item 2 above).
 2. **Check for an Aarhus reply** before anything else time-sensitive
    (item 5 above).
-3. **Get Yehor's explicit push decision** on both pending branches
-   (`draft/demo-section-4-26` and `main`, item 6 above) — push if
-   approved, then verify CA-5 per-job.
+3. **Get Yehor's explicit push decision on `main`'s `b6a826d`** (item 6
+   above — `draft/demo-section-4-26` is already fully pushed) — push if
+   approved, then verify CA-5 per-job (this push, unlike the demo
+   branch's, does trigger CI).
 4. **Ask about `/demo` production merge/deploy timing** — his call, not
    urgent (item 7).
 5. **Check NemKonto/Nordea progress and the grant confirmation-email
