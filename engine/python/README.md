@@ -11,6 +11,12 @@ pip install fixprove
 fixprove /path/to/your/project
 ```
 
+`fixprove check /path/to/your/project` (the same form the npm wrapper and
+fixprove.dev's own install instructions use) also works here — both forms
+are identical, so pip-only users don't need to know the npm package exists
+to follow the site's install block. See KS-TRACE
+`PRIORITY-TRACKER-2026-09-11-P0-CLI-SYNTAX` in `cli.py` for why.
+
 Exit codes: `0` clean, `1` unresolved symbol(s) found, `2` usage/setup
 error — designed to drop straight into a CI gate.
 

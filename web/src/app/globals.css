@@ -67,6 +67,34 @@ h1 {
   overflow-x: auto;
 }
 
+/* #KS-TRACE: PRIORITY-TRACKER-2026-09-11-NARRATED-DEMO-VIDEO-ADDENDUM |
+   fix: .video-intro was used as a section className in page.tsx with no
+   matching rule here -- caught by a guide-chat code review the executor's
+   own source-level check couldn't catch (no real Next.js render in this
+   sandbox). Deliberately NOT removing the class: this section is a
+   lead-in per its own KS-TRACE, meant to bond visually to the subhead
+   above rather than carry the same 48px section-to-section gap every
+   other <section> on this page gets from the generic `section h2` rule
+   below. Scoped as a descendant selector, matching this file's own
+   existing convention for class-scoped tweaks (.example .fail,
+   .cta-note code) rather than a bare .video-intro rule -- no new color
+   tokens, reuses only what's already defined. | test: visual check once
+   a real Next.js render is possible; source-level check confirms this is
+   now the only class in page.tsx with no matching selector anywhere in
+   this file. */
+.video-intro h2 {
+  margin-top: 0;
+}
+
+.demo-video {
+  display: block;
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  margin: 0 0 12px;
+}
+
 .example.install {
   color: var(--fg);
   margin-bottom: 16px;

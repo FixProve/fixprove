@@ -26,7 +26,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fixprove"
-version = "0.1.12"
+version = "0.1.13"
 description = "FixProve — deterministic AST-level verification that AI-generated code references real, installed symbols. Zero LLM tokens."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -132,6 +132,21 @@ Repository = "https://github.com/FixProve/fixprove"
 # own "pip install fixprove works standalone" requirement) | test:
 # test_console_script_entry_point_installs (verified via a real pip
 # install in this session's Adversarial Verify, see Keystone Report §2)
+#
+# KS-TRACE: PRIORITY-TRACKER-2026-09-11-P0-CLI-SYNTAX | decision: Yehor,
+# 2026-09-11, option (b), PARTIALLY SUPERSEDING the split above (not
+# deleting it -- the PATH-collision reasoning above is still why TWO
+# packages exist and why the npm wrapper still calls `python3 -m cli`
+# rather than shelling out to a `fixprove` on PATH). What changes: this
+# console script (`cli:main`) now ALSO accepts an optional leading "check"
+# token (see cli.py's main()), because fixprove.dev's own public install
+# block shows `fixprove check /path/to/your/project` after BOTH the pip
+# and npm install lines -- verified live against the site 2026-09-11 -- so
+# that promise was false for anyone who only ran `pip install fixprove`.
+# The original PATH-ambiguity concern doesn't cover this: accepting one
+# more optional token on an already-distinct binary doesn't reintroduce
+# any ambiguity about which binary answers to `fixprove`. Bare
+# `fixprove <path>` keeps working, unchanged | test: test_cli_check_token.py
 [project.scripts]
 fixprove = "cli:main"
 
