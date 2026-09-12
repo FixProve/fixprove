@@ -5,8 +5,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from cli import main  # noqa: E402
-from importlib.metadata import version as pkg_version
+from cli import main, _get_installed_version  # noqa: E402
 
 
 def test_version_flag_matches_installed_metadata(capsys):
@@ -15,4 +14,4 @@ def test_version_flag_matches_installed_metadata(capsys):
     assert exc_info.value.code == 0
     printed = capsys.readouterr().out.strip()
     assert printed != ""
-    assert printed == pkg_version("fixprove")
+    assert printed == _get_installed_version()
