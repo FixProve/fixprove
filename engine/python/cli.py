@@ -32,6 +32,7 @@ import argparse
 import json
 import sys
 import time
+from importlib.metadata import version as _pkg_version, PackageNotFoundError as _PkgNotFoundError
 from pathlib import Path
 
 from knowledge_base import build_knowledge_base
@@ -88,6 +89,13 @@ def _resolve_requirements_path(target: Path, explicit) -> Path:
     return target_dir / "requirements.txt"
 
 
+def _get_installed_version() -> str:
+    try:
+        return _pkg_version("fixprove")
+    except _PkgNotFoundError:
+        return "unknown (not installed via pip/PyPI metadata)"
+
+
 def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="fixprove check",
@@ -129,6 +137,18 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--package-json", default=None,
                          help="Path to package.json for TS/JS deps (default: <path>/package.json)")
     parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON")
+    # KS-TRACE: PRIORITY-TRACKER-2026-09-11-PIP-VERSION-GAP | decision:
+    # Yehor, 2026-09-12 -- the pip CLI never had a --version flag, on any
+    # released version (confirmed by code inspection, not assumed). Fixed
+    # using the SAME PRINCIPLE as the npm --version fix earlier this
+    # session (cli/src/index.ts reading package.json at runtime instead of
+    # a hardcoded string): importlib.metadata.version('fixprove') reads
+    # the version from the package's own installed metadata, so it can
+    # never drift from what's actually published -- the identical
+    # guarantee, via Python's own stdlib mechanism (available since 3.9,
+    # this project's own minimum) rather than a hand-rolled read of
+    # pyproject.toml. | test: test_version_flag_matches_installed_metadata
+    parser.add_argument("--version", action="version", version=_get_installed_version())
     return parser
 
 
