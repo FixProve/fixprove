@@ -2,16 +2,18 @@ NEXT SESSION — 4.30 — "0.1.15 is live and verified; decide when the
 orphaned-.py fix ships, then design the literary-diary idea before
 building it"
 
-Written 2026-09-13, Session 4.29 close. Session 4.29 confirmed the prior
-bad-tag incident fully closed, ran a genuine 3-repo customer self-test
-(finding one real crash and one real false-positive limitation), fixed
-and shipped `--version` as release 0.1.15 (independently verified from
-raw registry evidence, not a green checkmark), then fixed the crash and
-disclosed the false-positive limitation in a separate commit (`a9bba99`,
-confirmed live on `origin/main` via a direct GitHub fetch). Every number
-below was correct as of 2026-09-13 — recompute the live clocks fresh at
-session open rather than trusting this file, same standing rule as
-every prior starting prompt in this project.
+Written 2026-09-13, Session 4.29 close (point 9 below corrected same
+day, before any session opened this file — see its own note). Session
+4.29 confirmed the prior bad-tag incident fully closed, ran a genuine
+3-repo customer self-test (finding one real crash and one real
+false-positive limitation), fixed and shipped `--version` as release
+0.1.15 (independently verified from raw registry evidence, not a green
+checkmark), then fixed the crash and disclosed the false-positive
+limitation in a separate commit (`a9bba99`, confirmed live on
+`origin/main` via a direct GitHub fetch). Every number below was
+correct as of 2026-09-13 — recompute the live clocks fresh at session
+open rather than trusting this file, same standing rule as every prior
+starting prompt in this project.
 
 SESSION START (Keystone Stage 1 — Intake):
 
@@ -98,9 +100,30 @@ SESSION START (Keystone Stage 1 — Intake):
    trigger an unfounded accusation of fabrication without checking
    first (this session did both, correctly, in the same close).
 
-9. **Commit-message hygiene:** if writing a commit message to a file for
-   `git commit -F` on Windows, use `Set-Content -Encoding utf8NoBOM`
-   (or `ascii`), not plain `-Encoding utf8` — the latter embeds an
-   invisible byte-order-mark into the commit message permanently (landed
-   in `a9bba99`, cosmetic, not worth fixing retroactively, but avoid
-   repeating it).
+9. **Commit-message hygiene — corrected same day, before this file was
+   read by any session (the original text at close, `Set-Content
+   -Encoding utf8NoBOM`, was untested and turned out to be wrong):**
+   `utf8NoBOM` is NOT a valid `-Encoding` value on Yehor's actual
+   machine — confirmed directly, same session: this is Windows
+   PowerShell 5.1, and `utf8NoBOM` was only added as a valid value in
+   PowerShell 6+/Core. The cmdlet's own error names the full valid set
+   on this machine: `Unknown, String, Unicode, Byte, BigEndianUnicode,
+   UTF8, UTF7, UTF32, Ascii, Default, Oem, BigEndianUTF32` — no
+   `utf8NoBOM`. Use this instead, which works on any PowerShell version
+   and reliably avoids the BOM (this is what actually produced the
+   clean, uncorrupted commit `fe2939c` this session):
+
+   ```powershell
+   $msg = @"
+   <commit message text here>
+   "@
+   [System.IO.File]::WriteAllText("$PWD\<file>.txt", $msg, (New-Object System.Text.UTF8Encoding $false))
+   ```
+
+   Plain `-Encoding ascii` also avoids the BOM and is simpler, but only
+   safe if the message is pure ASCII (no Cyrillic, no smart quotes/
+   em-dashes, etc.) — the `.NET` method above is the general-case fix
+   and should be the default going forward. Plain `-Encoding utf8`
+   remains the one to actively avoid: it embeds an invisible BOM
+   permanently into the commit message (landed, cosmetically, in
+   `a9bba99`; not worth rewriting that pushed commit to fix).
