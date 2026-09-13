@@ -220,8 +220,28 @@ def main(argv=None) -> int:
     if py_files:
         req_path = _resolve_requirements_path(target, args.requirements)
         if not req_path.exists():
-            print(f"error: requirements file not found: {req_path}", file=sys.stderr)
-            return 2
+            # KS-TRACE: S4.29-SELFTEST-ORPHANED-PY | fix (found via the
+            # 2026-09-12 customer self-test against
+            # github.com/dyonng/one-pace-plex-automator): 2 incidental
+            # legacy .py scripts with no requirements.txt anywhere in an
+            # otherwise pure-TS project used to hard-return 2 here,
+            # refusing to check the TS/JS code too. Degrading to a
+            # warning + skipping only the Python side matches this
+            # file's own graceful-ecosystem-absence contract (see module
+            # docstring) one step further: a PRESENT-but-unmanifested
+            # ecosystem now degrades the same way an ABSENT one already
+            # did, instead of blocking the whole run | test:
+            # test_cli_orphaned_py_no_requirements_still_checks_ts
+            print(
+                f"warning: {len(py_files)} Python file(s) found but no "
+                f"requirements.txt at {req_path} -- skipping Python check. "
+                f"Add --requirements to specify its location, or a "
+                f"requirements.txt at the project root.",
+                file=sys.stderr,
+            )
+            py_files = []
+    if py_files:
+        req_path = _resolve_requirements_path(target, args.requirements)
         build_start = time.monotonic()
         py_kb = build_knowledge_base(req_path, cache_dir=cache_dir, timeout_seconds=args.timeout)
         build_elapsed += time.monotonic() - build_start
@@ -232,8 +252,20 @@ def main(argv=None) -> int:
     if ts_files:
         pkg_json_path = _resolve_package_json_path(target, args.package_json)
         if not pkg_json_path.exists():
-            print(f"error: package.json not found: {pkg_json_path}", file=sys.stderr)
-            return 2
+            # KS-TRACE: S4.29-SELFTEST-ORPHANED-PY | symmetry fix: same
+            # graceful-degradation treatment as the py_files case above,
+            # for consistency, even though no real-world repo has
+            # triggered this side yet.
+            print(
+                f"warning: {len(ts_files)} TypeScript/JS file(s) found but "
+                f"no package.json at {pkg_json_path} -- skipping TS/JS "
+                f"check. Add --package-json to specify its location, or a "
+                f"package.json at the project root.",
+                file=sys.stderr,
+            )
+            ts_files = []
+    if ts_files:
+        pkg_json_path = _resolve_package_json_path(target, args.package_json)
         build_start = time.monotonic()
         pkg_json = json.loads(pkg_json_path.read_text(encoding="utf-8"))
         package_names = sorted(set(pkg_json.get("dependencies", {})) | set(pkg_json.get("devDependencies", {})))

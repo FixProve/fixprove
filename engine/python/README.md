@@ -41,6 +41,14 @@ deterministic core locally or in your own pipeline.
   checked) rather than guessed at — see the engine's own Keystone Reports
   (`KS-REPORT-1.4-ts-resolver.md` in the source repository) for the full
   accuracy/limitation writeup.
+- Known limitation: a package that re-exports symbols from a separate npm
+  package under a renamed name (e.g. `vitest` re-exporting `describe`/`it`
+  from `@vitest/runner`, or `export { globalExpect as expect }`) can be
+  false-flagged as unresolved — the resolver does not yet follow
+  cross-package re-export chains or `as`-renames. Found via the
+  2026-09-12 customer self-test against
+  github.com/dyonng/one-pace-plex-automator (58 false positives, root
+  cause confirmed by reading vitest's own `.d.ts`).
 
 ## License
 

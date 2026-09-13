@@ -52,10 +52,16 @@ def test_cli_exit_2_on_missing_path():
     assert rc == 2
 
 
-def test_cli_exit_2_on_missing_requirements(tmp_path):
+def test_cli_warns_and_skips_on_missing_requirements(tmp_path, capsys):
+    # KS-TRACE: S4.29-SELFTEST-ORPHANED-PY | contract change: a .py file
+    # with no requirements.txt now warns + skips (rc=0) instead of hard-
+    # failing (rc=2) -- matches the graceful-ecosystem-absence contract.
     _write(tmp_path / "app.py", "import os\n")
     rc = main([str(tmp_path)])  # no requirements.txt anywhere
-    assert rc == 2
+    stderr = capsys.readouterr().err
+    assert rc != 2, f"missing requirements.txt must not hard-fail the run (rc={rc})"
+    assert "warning" in stderr.lower()
+    assert "requirements.txt" in stderr
 
 
 def test_cli_json_output_shape(tmp_path, capsys):
