@@ -70,6 +70,29 @@ export default function DemoPage() {
         Not staged copy — the same commands work on your own machine.
       </p>
 
+      {/*
+        KS-TRACE: SESSION-4.30-VIDEO-LANDMINE-GUARD | requirement: this
+        section is already live in `main`'s history (this file's own older
+        header comments above are stale on that point — see the
+        CORRECTED STATUS block, kept as-is per this file's append-only
+        convention rather than edited in place) and still references
+        /demo-narration.mp4, which does not exist in this repo (confirmed
+        directly, 2026-09-14: web/public/ contains only og-image.png).
+        Found via guide-chat review the same night `main` picked up two
+        unrelated engine fixes, two days before the Aarhus meetup this
+        page's QR code points visitors to. No `wrangler deploy` has
+        actually been run since `main` last diverged from the live
+        (pre-video) site, so nothing is broken in production YET — but the
+        next deploy of `main` as it stood would ship an empty, source-less
+        video player onto exactly the page a QR code is about to send a
+        room full of strangers to. Commented out (not deleted) so it is
+        trivial to re-enable the moment the real .mp4 exists at
+        web/public/demo-narration.mp4 — remove this comment wrapper only,
+        the JSX and demo-video CSS are both left completely intact below.
+        | test: manual visual check once the real .mp4 is in place and
+        this section is re-enabled; until then, absence of a broken
+        <video> element on any future deploy of this page.
+
       <section className="video-intro">
         <h2>Watch it catch one</h2>
         <video className="demo-video" controls preload="metadata">
@@ -82,6 +105,7 @@ export default function DemoPage() {
           examples below.
         </p>
       </section>
+      */}
 
       <section>
         <h2>Python</h2>
