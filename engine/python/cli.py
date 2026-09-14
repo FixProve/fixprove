@@ -267,7 +267,20 @@ def main(argv=None) -> int:
     if ts_files:
         pkg_json_path = _resolve_package_json_path(target, args.package_json)
         build_start = time.monotonic()
-        pkg_json = json.loads(pkg_json_path.read_text(encoding="utf-8"))
+        pkg_json = json.loads(
+            # KS-TRACE: SESSION-4.30-BOM-FIX | requirement: a package.json
+            # written by common Windows tooling (including PowerShell's own
+            # `Out-File -Encoding utf8`, the exact gotcha already on record in
+            # this project's commit-message hygiene notes) can carry a UTF-8
+            # BOM. `encoding="utf-8"` does not strip it and json.loads then
+            # raises JSONDecodeError("Unexpected UTF-8 BOM...") -- an unhandled
+            # crash on real-world input, same class as the orphaned-.py defect
+            # this release already fixed. `utf-8-sig` strips a BOM if present
+            # and is otherwise identical to `utf-8` for a normal file.
+            # | assumption: no valid package.json needs a literal BOM preserved
+            # | test: test_cli_check_package_json_with_bom_is_parsed
+            pkg_json_path.read_text(encoding="utf-8-sig")
+        )
         package_names = sorted(set(pkg_json.get("dependencies", {})) | set(pkg_json.get("devDependencies", {})))
         node_modules = pkg_json_path.parent / "node_modules"
         ts_kb = ts_build_knowledge_base(node_modules, package_names)

@@ -323,7 +323,16 @@ def build_knowledge_base(
             test_cache_hit_skips_reintrospection,
             test_cache_miss_on_version_change
     """
-    text = Path(requirements_path).read_text(encoding="utf-8")
+    # KS-TRACE: SESSION-4.30-BOM-FIX | requirement: a requirements.txt
+    # written by common Windows tooling can carry a UTF-8 BOM. Read as plain
+    # "utf-8", the BOM lands as a literal \ufeff prefix on the first line,
+    # which fails _REQ_LINE_RE and silently downgrades that line to
+    # "unsupported-requirement-line" -- the FIRST pinned dependency's real
+    # check is silently skipped, no error at all. Same root cause as the
+    # package.json BOM crash in cli.py, fixed the same way. | assumption:
+    # no valid requirements.txt needs a literal BOM preserved | test:
+    # test_parse_requirements_with_bom_reads_first_line
+    text = Path(requirements_path).read_text(encoding="utf-8-sig")
     entries = parse_requirements(text)
     lockfile_hash = _lockfile_hash(entries)
 
