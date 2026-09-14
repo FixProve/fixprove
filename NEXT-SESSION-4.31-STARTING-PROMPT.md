@@ -19,6 +19,17 @@ Every number below was correct as of 2026-09-14 — recompute the live
 clocks fresh at session open rather than trusting this file, same
 standing rule as every prior starting prompt in this project.
 
+**Written same day, later — Addendum 1 (`KS-REPORT-4.30-addendum-1-
+field-verification.md`), folded into this prompt directly rather than
+left as a separate thing to re-read:** Yehor commissioned a separate
+Claude Code Sonnet 5 session to install the published `0.1.16` packages
+fresh and test them against 22 scenarios, including two real production
+repos. Its report was read via `Artifact`'s `read` action (full raw
+content, not the chat summary) and independently reproduced from
+scratch before anything below was written. Two new items now sit inside
+step 4's scope decision (D8, D9); one thing needed no new work at all
+(EV-04, below).
+
 SESSION START (Keystone Stage 1 — Intake):
 
 1. **Availability line:** state which tools/folders/files are reachable,
@@ -60,6 +71,26 @@ SESSION START (Keystone Stage 1 — Intake):
    - Draft release-note text for the tag/GitHub release covering all
      three fixes: BOM parsing, React namespace/`CSSProperties`, and the
      Python 3.10 floor.
+   - **D8 (new, Addendum 1) — add a known-limitation paragraph to
+     `engine/python/README.md`**, same style as the existing D2 (vitest)
+     entry: `from pkg.sub.sub import Name` is flagged as unresolved
+     whenever `Name` isn't re-exported at `pkg`'s own top level —
+     confirmed on `cryptography`, `opentelemetry`, `typer.testing`,
+     `fastapi.testclient`. Root cause: `resolver.py`'s Pass A checks the
+     imported leaf only against the top-level package's flat symbol set,
+     never the actual submodule (`resolver.py:177-180`). **Documentation
+     only — do not attempt the real fix under this stop-loss.** The
+     correct fix needs the KB-build step to introspect actual submodule
+     paths, a real design question, not a rushed change; give it its own
+     future session.
+   - **D9 (new, Addendum 1) — Yehor's decision before this commit, not
+     assumed either way:** a Python project with no `requirements.txt`
+     currently exits `0` (not `2`) even though the whole Python check was
+     silently skipped — confirmed, low-risk to fix (a `cli.py` exit-code
+     branch), but it changes the documented `0`/`1`/`2`/`127` contract.
+     Either fix it in this same commit (mention it in the release notes)
+     or defer it one cycle and add it to the D8 paragraph instead — ask
+     before proceeding, don't default to either.
    One commit, clear KS-TRACE-citing message, push, confirm CI green on
    the bump commit before tagging.
 
@@ -74,6 +105,10 @@ SESSION START (Keystone Stage 1 — Intake):
      D5) parses cleanly, no crash.
    - `import { CSSProperties } from "react"` resolves clean — no
      `unresolved-symbol` (Session 4.30's D6, the false-positive check).
+     Already independently re-confirmed against React 19.2.7 +
+     `@types/react` 19.2.17 specifically (Addendum 1, EV-04), not just
+     the 18.3.1/18.3.12 pair used when D6 was first fixed — no
+     regression proof gap here, just re-run it as normal.
    - **Both planted samples are still caught** —
      `fetch_status.py:11 requests.get_json` and
      `script.ts:9 axios.getJson` — this is the false-negative check on

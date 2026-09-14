@@ -186,6 +186,58 @@ copy change, before Thursday regardless.
   caught, not just the false positive resolved, as the false-negative
   check on that change).
 
+**Session 4.30 close, `3c42c71`** — full formal close performed:
+`KS-REPORT-4.30-bom-namespace-defects-0.1.16-close.md`, `PROGRESS.md`
+backfill (4.29's own entry had been silently skipped at its close — a
+real gap, found and fixed here, not silently) + full 4.30 entry,
+`MEMORY/state.md` fully replaced, `NEXT-SESSION-4.31-STARTING-PROMPT.md`
+written. `MAINTENANCE-PROTOCOL-browser.md`'s own first-run date corrected
+in place (it said "Tuesday 2026-09-16" — a Wednesday; fixed to
+2026-09-15). Independently re-verified at close, not just from Yehor's
+pasted output: local `main`/`origin/main` both at `3c42c71` (direct
+`.git/refs/*` read), CI green on that commit (58s), PyPI still `0.1.16`.
+
+**FOURTH FURTHER UPDATE, same day — independent field verification of
+the published `0.1.16` package, commissioned by Yehor via a separate
+Claude Code Sonnet 5 session, then independently re-verified by this
+session before being trusted (full report: `KS-REPORT-4.30-addendum-1-
+field-verification.md`):**
+
+- **EV-04 (React 19 `CSSProperties`) needs no new work.** Confirmed real
+  on the *published* `0.1.16`; independently re-tested against the
+  *already-fixed, unreleased* `aaafaeb` source with the field report's
+  exact versions (React 19.2.7, `@types/react` 19.2.17) — the existing
+  D6 fix already covers it. Ships the moment `0.1.17` does.
+- **D8 (new) — Python from-import submodule resolution.**
+  `from cryptography.hazmat.primitives.asymmetric import rsa`-shaped
+  imports are flagged as unresolved on entirely correct code; confirmed
+  by direct reproduction (root cause: `resolver.py:177-180` checks the
+  imported leaf only against the top-level package's flat symbol list,
+  never the actual submodule). Real, common (`cryptography`,
+  `opentelemetry`, `typer.testing`, `fastapi.testclient` all affected).
+  **Recommendation: disclose in `engine/python/README.md` as a known
+  limitation for `0.1.17` (documentation only), do not attempt the real
+  fix under Tuesday's stop-loss** — it needs the KB-build step to
+  introspect actual submodule paths, a real design question. Yehor's
+  call, not decided here.
+- **D9 (new, small) — "no manifest found" returns exit `0`, not a
+  distinct code.** Confirmed by direct reproduction: a Python project
+  with no `requirements.txt` skips the check entirely and still exits
+  `0`, indistinguishable from a genuine clean pass. Low-risk to fix (a
+  `cli.py` exit-code branch) but changes the documented exit-code
+  contract. Offered as an optional small addition to `0.1.17`; equally
+  fine to defer — Yehor decides at the bump step, not assumed either
+  way.
+- Two smaller scope gaps (invented package names pass clean unless
+  already pinned; `.gitignore` not respected when walking a directory)
+  confirmed real, filed to backlog, not time-pressured.
+- **My own error, caught by git's own output, not by me first:** I told
+  Yehor to `git add` `PROGRESS.md` at Session 4.30's close — it's
+  gitignored, same as `MEMORY/`. Git declined it safely; the close
+  commit is correct as landed. New durable note filed:
+  `PROGRESS.md` is gitignored despite sitting alongside tracked
+  `NEXT-SESSION-*`/`KS-REPORT-*` files.
+
 The P0 items immediately below (git-commit crisis, `0.1.14` bump) are
 historical and already resolved — left in place per this file's own
 "preserve the record, don't erase it" convention, not because they're
