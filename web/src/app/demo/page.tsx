@@ -51,6 +51,8 @@
 // grep run against all new on-screen text below (no pricing, no
 // unverifiable absolute claims) before this was written.
 
+import PitchSlides from "./PitchSlides";
+
 export const metadata = {
   title: "Live demo — FixProve",
   description:
@@ -124,6 +126,16 @@ export default function DemoPage() {
             examples/meetup-demo-2026-09-17/ts-sample
           </a>
         </p>
+      </section>
+
+      <section>
+        <h2>Bring this to a talk</h2>
+        <p>
+          A short, click-through presentation covering the same material —
+          built for the Aarhus Claude Code Meetup, editable any time by
+          editing <code>PitchSlides.tsx</code>.
+        </p>
+        <PitchSlides />
       </section>
 
       <section>

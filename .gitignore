@@ -76,3 +76,16 @@ PROGRESS.md
 # web/functions/api/_validate.ts -> web/functions-dist/api/_validate.js).
 # A build artifact, same category as dist/ above; never tracked at HEAD.
 web/functions-dist/
+
+# Own legal self-assessment, not a product limitation -- pulled from
+# public view 2026-09-14 (Yehor's decision, see MEMORY/critical-actions.md,
+# 2026-09-14 entry and EXPOSURE-CHECK-PROTOCOL.md). Disclosing a product
+# limitation builds trust (this project's Candour Decision Rule); this PDF
+# is different -- it states FixProve's own draft legal terms are "not
+# launch-ready" and names specific liability gaps, which undercuts the v1
+# Privacy Policy/Terms being published around the same time. Untracked via
+# `git rm --cached`, not deleted -- the file stays on disk.
+# The companion deep-research doc (FixProve-Competitive-Legal-Deep-Research-
+# 2026-09-09.md) stays tracked: its own-gap language is framed as generic
+# "what's required when" guidance, not a "we are deficient" admission.
+FixProve-vFault-Legal-Diligence.pdf

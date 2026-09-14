@@ -239,3 +239,148 @@ footer a {
 footer a:hover {
   color: var(--accent);
 }
+
+/* #KS-TRACE: SESSION-4.30-PITCH-SLIDES | requirement: style the presentation
+   launcher button and fullscreen slide overlay added in PitchSlides.tsx |
+   assumption: reuses only tokens already defined at the top of this file
+   (--bg/--fg/--muted/--accent/--card/--border) -- no new color tokens, no
+   new fonts, same system font stack the rest of this page uses | test:
+   visual check once a real Next.js render is possible in this environment. */
+.pitch-launcher {
+  display: inline-block;
+  padding: 13px 22px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--fg);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pitch-launcher:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.pitch-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  color: var(--fg);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+}
+
+.pitch-close {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 32px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pitch-close:hover {
+  color: var(--fg);
+}
+
+.pitch-slide {
+  max-width: 780px;
+  width: 100%;
+  text-align: center;
+}
+
+.pitch-eyebrow {
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.pitch-title {
+  font-size: 40px;
+  line-height: 1.2;
+  margin: 0 0 20px;
+}
+
+.pitch-body {
+  font-size: 20px;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 0;
+}
+
+.pitch-code {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 24px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 17px;
+  line-height: 1.8;
+  color: var(--fg);
+  margin: 12px auto 0;
+  display: inline-block;
+  text-align: left;
+}
+
+.pitch-controls {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-top: 48px;
+}
+
+.pitch-controls button {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--fg);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.pitch-controls button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.pitch-controls button:not(:disabled):hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.pitch-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.pitch-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  cursor: pointer;
+}
+
+.pitch-dot.active {
+  background: var(--accent);
+}
+
+.pitch-counter {
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 13px;
+}

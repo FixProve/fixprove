@@ -114,10 +114,22 @@ anything is published to fixprove.dev.
 ## 2026-09-10 — Travis Mathers scheduling
 
 **CONFIRMED** via Gmail: a thread "Yehor Kaliberda (FixProve) x Travis"
-from `travisjm@adm.aau.dk` (Aarhus University), sent 2026-09-10 07:44
-UTC, with a Microsoft Teams meeting invite (`.ics` attached). A calendar
-event "Travis talk 11.09 10:00" exists on Yehor's calendar, created
-2026-09-09, last updated 2026-09-11 09:54 CEST.
+from `[work email — redacted from public log 2026-09-14]` (Aarhus
+University), sent 2026-09-10 07:44 UTC, with a Microsoft Teams meeting
+invite (`.ics` attached). A calendar event "Travis talk 11.09 10:00"
+exists on Yehor's calendar, created 2026-09-09, last updated 2026-09-11
+09:54 CEST.
+
+**Redaction note, 2026-09-14 (Claude, Node 1):** the address above was
+replaced with a placeholder. This file, part of commit `cbb09ce`, put a
+real third-party work email address in the clear in this repository,
+which is public. Yehor's decision, 2026-09-14: redact going forward.
+This does not un-publish the version already visible in public git
+history — no history rewrite was performed (see
+`MEMORY/critical-actions.md`, 2026-09-14 entry, and
+`EXPOSURE-CHECK-PROTOCOL.md`). A grep of `session-logs/` and every
+top-level `.md` file in this repo for the address found no other
+occurrence.
 
 ## 2026-09-11 — Travis Mathers call held
 
