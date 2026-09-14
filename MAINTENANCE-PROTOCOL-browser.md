@@ -7,8 +7,14 @@ live page) is caught by a routine rather than by accident. | assumption:
 this file documents the protocol; it does not itself run anything —
 running it means following these steps in a session and recording the
 result in `FIXPROVE-PRIORITY-TRACKER-2026-09-11.md`'s "Watch list — last
-checked" table. | test: the first full pass, Tuesday 2026-09-16 at
+checked" table. | test: the first full pass, Tuesday 2026-09-15 at
 session start, before the 0.1.17 bump.
+CORRECTION (Session 4.30 close, 2026-09-14): this line originally read
+"Tuesday 2026-09-16" — 2026-09-16 is a Wednesday, not a Tuesday (2026 is
+not a leap year on this boundary; Sept 14, 2026 is a Monday). Fixed to
+the correct date in place; caught by the same session that wrote the
+original line, via plain day-of-week arithmetic at close, not by anyone
+having acted on the wrong date first.
 
 ## Principles
 
