@@ -15,6 +15,182 @@ file is a snapshot, not a live feed. Check items off as `[x]` and note
 the date/outcome inline rather than deleting the line — this project's
 convention is to preserve the record, not erase it.
 
+**UPDATE, 2026-09-14 (Session 4.30) — this tracker is now substantially
+superseded; read `MEMORY/state.md` for current state, this block for the
+delta.** Everything below this point describes a resolved situation:
+the git-commit crisis was fixed the same night (4.28 close); `0.1.14`
+shipped and was independently verified live on both registries (Session
+4.29); the customer self-test the P0 items below were blocking has since
+run for real against 3 unplanted GitHub repos, finding one genuine crash
+(orphaned `.py` file + no `requirements.txt`, hard `exit 2`) and one
+genuine false positive (vitest cross-package re-exports) — see
+`KS-REPORT-4.29-selftest-defects-0.1.15-release.md`. Since then:
+
+- **`0.1.15` shipped** (the `--version` CLI fix) and was independently
+  verified from raw registry evidence plus a fresh install (Session
+  4.29).
+- **The orphaned-`.py` crash (D1) is fixed and shipped as `0.1.16`**
+  (commit `a9bba99`, tagged and released this session, 2026-09-14).
+  Verified end-to-end, not assumed: CI green on the fix commit and on
+  the release commit (workflow-specific Actions page — the generic
+  Actions page renders stale for this repo, a real tool limitation, not
+  a shortcut taken); the release run's four jobs (`test`,
+  `verify-artifact-contents`, `publish-npm`, `publish-pypi`) all
+  succeeded; npm's `dist-tags.latest` and `gitHead` independently
+  confirmed against the registry API; PyPI's project page independently
+  confirmed `0.1.16` released today; a genuine fresh `pip install`
+  and `npm install -g` on Yehor's own machine; and the actual regression
+  case re-run live — a TypeScript project with one orphaned `.py` file
+  and no `requirements.txt` now warns and continues (checks the `.ts`
+  file, exit code `0`) instead of the old hard `exit 2`.
+- **The vitest false positive (D2) remains disclosed-only, not fixed** —
+  documented in `engine/python/README.md` since `a9bba99`; the TS
+  resolver still doesn't follow cross-package re-exports. Unchanged,
+  out of scope until explicitly picked up.
+- **Separately, a public-exposure review of commit `cbb09ce`** found and
+  remediated two real issues (a third-party email in a session log,
+  redacted; a self-authored legal-gap PDF, untracked from public view) —
+  see `MEMORY/critical-actions.md`, 2026-09-14 entry, and the new
+  `EXPOSURE-CHECK-PROTOCOL.md`.
+- **A presentation ("Bring this to a talk") shipped to `/demo`** the same
+  session, for the Aarhus Claude Code Meetup (2026-09-17).
+
+**FURTHER UPDATE, same day (2026-09-14), later in Session 4.30:**
+
+- **Copenhagen (Wed Sept 16) trip: skipped, closed.** Yehor's decision.
+  Nothing further to track here.
+- **A second, distinct BOM-handling defect found and fixed — for real,
+  not inferred.** During `0.1.16`'s own fresh-install verification, a
+  `package.json` written by PowerShell's `Out-File -Encoding utf8`
+  (which embeds a UTF-8 BOM) crashed `cli.py` with an unhandled
+  `JSONDecodeError`. Reproduced directly (hex-confirmed `EF BB BF`
+  prefix, exact traceback) in a clean scratch clone of the shipped
+  `0.1.16` commit before any fix was written. While root-causing it,
+  checked whether `knowledge_base.py`'s `requirements.txt` reader had
+  the same exposure — it does, but silently: a BOM there doesn't crash,
+  it makes the first pinned dependency's line silently fail its regex
+  match and get skipped with no error at all. Same root cause, two
+  failure shapes (one loud, one silent). Fixed both call sites with
+  `encoding="utf-8-sig"`, added `engine/python/tests/test_bom_handling.py`
+  (4 tests: BOM and no-BOM cases for both files), and ran the full suite
+  against the patched clone (199 passed). The 31 other failures in that
+  run are **pre-existing and unrelated** — confirmed identical on a
+  fresh, completely unpatched clone of the exact shipped `0.1.16` commit
+  (same 31 test names fail either way; looks like a `tree-sitter`
+  native-binding/environment quirk in this sandbox, not something this
+  project's own CI — which gates releases and passed — encounters).
+  **Status: fix applied and verified on Yehor's actual disk
+  (`engine/python/cli.py`, `engine/python/knowledge_base.py`,
+  `engine/python/tests/test_bom_handling.py`), not yet committed.**
+  Per Yehor's decision: commit to `main` now with a KS-TRACE-citing
+  message, do **not** tag, ships in `0.1.17` after Thursday Sept 17.
+  Push only on Yehor's explicit word.
+- **Correction to the demo-slides status.** The guide-model chat's most
+  recent message assumed the `/demo` presentation (`PitchSlides.tsx`,
+  the `page.tsx` addition, the `globals.css` addition) was still
+  uncommitted "in the tree." That's not correct — independently
+  verified against git history: all three files are already committed
+  to `main` and pushed, as part of commit `1592025` (the same commit
+  that did the exposure remediation). There was nothing uncommitted to
+  move to a branch. Separately verified and worth Yehor's attention
+  before any deploy decision: (1) the diff for that commit touches only
+  an import line and one new self-contained `<section>` in `page.tsx` —
+  it does **not** touch the existing `<video>`/`.video-intro` section at
+  all; (2) an exposure grep of every on-screen string in
+  `PitchSlides.tsx` (all 8 slides' eyebrow/title/body/code text) found
+  no third-party emails, names, or identifying details; (3) **being on
+  `main` does not mean it's live** — this repo's web app deploys only
+  via a manual `wrangler deploy` (or `pnpm run deploy`) that Yehor runs
+  himself from his own machine (`web/wrangler.toml`,
+  `RUNBOOK-LIVE-DEPLOYMENT.md`, `STAGE-1-DEPLOY-RUNBOOK.md` all confirm
+  this; no GitHub Actions workflow deploys the web Worker on push). So
+  the slides are safely committed and reviewable, but not yet in front
+  of anyone visiting fixprove.dev, unless Yehor has deployed since
+  `1592025` — going live remains entirely his own separate decision, to
+  make after he and the guide-model chat have actually looked at it.
+- **D2 (vitest cross-package re-export false positive): unchanged**,
+  still disclosed-only, out of scope.
+- **Standing rule for the rest of this week, per the guide model and
+  Yehor's own decision: no more releases before Thursday Sept 17 unless
+  the demo path itself is broken. `0.1.16` is the demo version.**
+
+**SECOND FURTHER UPDATE, same night:** both BOM-fix commits are now on
+`main` and pushed (`d55c20a`, `aaafaeb`) — pushing does not itself
+release anything (`release.yml` only fires on a `v*.*.*` tag; none was
+made), so this is still within the no-release-before-Thursday rule.
+
+- **A second, real, higher-impact defect found the same night, this time
+  by Yehor running `fixprove check .` against his own real `yehor.ai`
+  repo** (his own idea, while figuring out how to demo the product —
+  not a synthetic test). Found: `import { CSSProperties } from "react"`
+  — completely valid, `tsc`-clean TypeScript, independently confirmed
+  against the real compiler — flagged as `unresolved-symbol`. Root
+  cause, confirmed against the real installed `@types/react@18.3.12`:
+  11 real React 18 APIs (`CSSProperties`, `useId`,
+  `useSyncExternalStore`, `useDeferredValue`, `useTransition`,
+  `startTransition`, `useInsertionEffect`, `act`, `TransitionFunction`,
+  `TransitionStartFunction`, `ModifierKey`) are declared with an
+  explicit `export` keyword inside `declare namespace React {...}}`, a
+  shape the existing namespace-member resolution never handled. Fixed
+  in `ts_knowledge_base.py`, 2 new regression tests added, full suite
+  232/232, and verified against the real `yehor.ai` repo from source
+  (`python -m cli`) — clean. **Committed and pushed, same as the BOM
+  fix** (`aaafaeb`), same low-risk reasoning (no tag, no release
+  triggered). Not yet reflected in the published `0.1.16` package —
+  your global `fixprove` command still shows the old behavior until a
+  real release happens.
+- **Correction to the earlier "31 pre-existing test failures" note**
+  (from the BOM-fix entry above): that was mis-diagnosed as a
+  "tree-sitter environment quirk." The real cause was simpler — two
+  test-fixture directories needed their own `npm install`/`pip install`
+  that hadn't been run in the verification sandbox. Once done, the full
+  suite was 230/230 clean even before tonight's second fix. No product
+  ambiguity there; just an incomplete setup step, now corrected for the
+  record.
+- **Open decision, still yours**: whether either or both of tonight's
+  fixes justify a real release (version bump + tag) before Thursday
+  under the "demo path is broken" exception, or whether both wait for
+  `0.1.17` after. Nothing has been tagged or released without your
+  word.
+
+**THIRD FURTHER UPDATE, same night — guide model reversed its own
+release-freeze stance, Yehor delegated the call:** decision recorded is
+**0.1.17 ships Tuesday 2026-09-15**, stop-loss 20:00 CEST (freeze and run
+Thursday on `0.1.16` + planted samples if not fully verified by then; tag
+still needs your one-word go). No web deploy (`wrangler`), no `/demo`
+copy change, before Thursday regardless.
+
+- **Install verification done (real checks):** wheel matrix confirms a
+  genuine Python 3.9 gap (not Mac-specific) for `tree-sitter` core and
+  `tree-sitter-python` — no wheels on any platform, source build
+  required. 3.10+ fully covered everywhere. `pipx run`/`pipx install`
+  confirmed architecturally incompatible with FixProve's Python-side
+  check (isolates the tool from the project being checked — flags real
+  dependencies as missing, always) — **dropped from the install-copy
+  plan**. `npx` confirmed fine as a Node convenience, but still needs
+  Python 3.9+ + `pip install fixprove` underneath; both its fallback
+  messages (no Python; Python but engine missing) are clean and
+  actionable.
+- **Video-section landmine guarded**: `page.tsx`'s empty `<video>`
+  section (already live in `main`'s history, references a nonexistent
+  `/demo-narration.mp4`) commented out, CSS untouched, `tsc`-verified.
+- **All three of tonight's fixes are now committed AND pushed to
+  `main`**: `d55c20a` (BOM), `aaafaeb` (React namespace/CSSProperties),
+  `8590dc3` (video guard). None trigger a release on their own (no tag).
+  Yehor independently confirmed the React fix from source
+  (`python -m cli`) against the real `yehor.ai` repo that found it: clean.
+- Remaining before Tuesday's release gate: CI green on HEAD including
+  all three commits, then the full 0.1.17 sequence (manifest bump, tag on
+  approval, raw publish logs, fresh install, and — important given
+  `aaafaeb` touches the TS resolver — both planted samples must still be
+  caught, not just the false positive resolved, as the false-negative
+  check on that change).
+
+The P0 items immediately below (git-commit crisis, `0.1.14` bump) are
+historical and already resolved — left in place per this file's own
+"preserve the record, don't erase it" convention, not because they're
+still open.
+
 **UPDATE, 2026-09-11, session close (Session 4.28):** publish attempt
 made tonight. npm succeeded (`fixprove@0.1.13` is live); PyPI failed
 (`403 Forbidden`, root-caused as this project's PyPI being
