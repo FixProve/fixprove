@@ -244,10 +244,39 @@ def _namespace_member_names(body: Node, source: bytes) -> set:
     # is an accepted, narrower scope boundary rather than an oversight).
     # Nested `namespace` blocks are not recursed into (out of scope, no
     # real package exercising this was found this session).
+    #
+    # KS-TRACE: SESSION-4.30-NAMESPACE-EXPORT-DEFECT | fix (found 2026-09-14
+    # via a real, installed @types/react@18.3.12: `import { CSSProperties }
+    # from "react"` -- completely valid, tsc-clean TypeScript -- was flagged
+    # `unresolved-symbol`). Root cause: a namespace member written WITH an
+    # explicit `export` keyword (`export interface CSSProperties extends
+    # ...`) parses as an `export_statement` node wrapping the real
+    # declaration, not as a bare `interface_declaration` directly under
+    # `body.children` -- so the loop below never matched it and the name was
+    # silently dropped from the existence list. Confirmed this is not
+    # theoretical: this exact @types/react version explicitly `export`s 11
+    # namespace members this way (grepped directly against the installed
+    # .d.ts), all real React 18 APIs -- CSSProperties, useId,
+    # useSyncExternalStore, useDeferredValue, useTransition,
+    # startTransition, useInsertionEffect, act, TransitionFunction,
+    # TransitionStartFunction, ModifierKey -- every one of them a false
+    # positive under the old code. Fixed by unwrapping one `export_statement`
+    # level first (mirrors `_parse_export_statement`'s own "direct export of
+    # a declaration" branch at module scope) before matching against the
+    # same declaration-kind checks already below -- no new declaration
+    # shapes handled, just this one already-handled shape reached through an
+    # extra `export` wrapper.
     # | test: test_namespace_member_names_function_class_interface_type_enum,
-    #         test_namespace_member_names_ignores_nested_namespace
+    #         test_namespace_member_names_ignores_nested_namespace,
+    #         test_namespace_member_names_unwraps_export_statement,
+    #         test_export_equals_namespace_real_react_css_properties
     members = set()
-    for child in body.children:
+    for raw_child in body.children:
+        child = raw_child
+        if child.type == "export_statement":
+            child = next((c for c in child.children if c.type != "export"), None)
+            if child is None:
+                continue
         if child.type in ("function_declaration", "function_signature", "enum_declaration"):
             ident = next((c for c in child.children if c.type == "identifier"), None)
             if ident is not None:

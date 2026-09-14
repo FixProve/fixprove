@@ -491,6 +491,63 @@ def test_export_equals_namespace_real_react_shape(tmp_path):
     assert "totallyFakeHook" not in entry["symbols"]  # still catches a real hallucination
 
 
+def test_namespace_member_names_unwraps_export_statement():
+    # KS-TRACE: SESSION-4.30-NAMESPACE-EXPORT-DEFECT | a namespace member
+    # written WITH an explicit `export` keyword parses as an
+    # export_statement wrapping the real declaration, not as a bare
+    # interface/function/type_alias_declaration directly under the
+    # namespace body -- the un-fixed loop silently dropped it.
+    unit = parse_dts_source(
+        'declare namespace ReactNS {\n'
+        '  function useState(): void;\n'
+        '  export interface CSSProperties { color?: string; }\n'
+        '  export type ModifierKey = "Alt" | "Shift";\n'
+        '  export function useId(): string;\n'
+        '}\n'
+    )
+    assert unit.namespaces["ReactNS"] == {
+        "useState", "CSSProperties", "ModifierKey", "useId",
+    }
+
+
+def test_export_equals_namespace_real_react_css_properties(tmp_path):
+    # KS-TRACE: SESSION-4.30-NAMESPACE-EXPORT-DEFECT | found 2026-09-14
+    # against a real, installed @types/react@18.3.12: `import {
+    # CSSProperties } from "react"` -- valid, tsc-clean TypeScript -- was
+    # flagged unresolved-symbol, because this @types/react version declares
+    # CSSProperties (and 10 other real React 18 APIs: useId,
+    # useSyncExternalStore, useDeferredValue, useTransition,
+    # startTransition, useInsertionEffect, act, TransitionFunction,
+    # TransitionStartFunction, ModifierKey) with an explicit `export`
+    # keyword inside `declare namespace React {...}`, a shape
+    # test_export_equals_namespace_real_react_shape above never exercised
+    # (its un-prefixed hooks/types were the only shape known when Session
+    # 4.5 wrote this fix). Reproduces that exact shape as a synthetic
+    # fixture (mirroring the sibling test's own real-npm-shape-as-a-fixture
+    # convention) rather than depending on @types/react being installed in
+    # every environment this suite runs in.
+    pkg_dir = tmp_path / "react-namespace-export-demo"
+    pkg_dir.mkdir()
+    (pkg_dir / "package.json").write_text(
+        json.dumps({"name": "react-namespace-export-demo", "version": "1.0.0", "types": "./index.d.ts"}))
+    (pkg_dir / "index.d.ts").write_text(
+        'declare namespace ReactNS {\n'
+        '  function useState<S>(initial: S): [S, (s: S) => void];\n'
+        '  export interface CSSProperties { color?: string; }\n'
+        '  export function useId(): string;\n'
+        '  export type ModifierKey = "Alt" | "Shift";\n'
+        '}\n'
+        'export = ReactNS;\n'
+        'export as namespace ReactNS;\n',
+        encoding="utf-8",
+    )
+    entry = build_package_entry(pkg_dir, "react-namespace-export-demo", tmp_path)
+    assert entry["status"] == "ok"
+    for name in ("useState", "CSSProperties", "useId", "ModifierKey"):
+        assert name in entry["symbols"], f"{name} missing -- Session 4.30 export-wrapped-namespace-member regression"
+    assert "totallyFakeHook" not in entry["symbols"]  # still catches a real hallucination
+
+
 def test_export_equals_class_not_namespace_unaffected(tmp_path):
     # regression guard: `export = SomeClass` (NOT a namespace) must NOT
     # leak the class's own members into exported_names as named-import
