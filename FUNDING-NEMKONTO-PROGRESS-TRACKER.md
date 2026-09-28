@@ -246,3 +246,24 @@ right now since nothing is being applied to — flag if priorities change.
 Nothing in this file has been copied into `MEMORY/critical-actions.md` or
 `state.md` yet — holding until Yehor has seen and confirmed this tracker,
 per this project's "verify before recording" discipline.
+
+---
+
+## ADDENDUM 2026-09-28 — Route A (Nordea) DONE: account approved + agreement signed
+
+- 2026-09-17: Nordea Erhverv email "Vi har godkendt din ansøgning" — business
+  customer application APPROVED.
+- 2026-09-28: signed **Nordea Business Base, aftale nr. 0170870662** via Nets
+  e-sign with MitID — receipt "Signeringen er udført" (Businesspakke-Agreement),
+  screenshot held by Yehor. Checked before signing: party "Fixprove, C/O Yehor
+  Kaliberda", CVR 46646223, Stockholmsgade 3, 1. th., 8200 Aarhus N — matches
+  fixprove.dev terms/privacy. Open-ended, cancellable any time.
+- **NemKonto:** the agreement states the driftskonto "indberettes som
+  virksomhedens Nemkonto" — registration is automatic, not a separate step.
+- 2nd e-sign link = "Samtykkeerklæring – Markedsføring fra Nordea" (optional
+  marketing consent). **Declined — not signed** (Yehor, 2026-09-28). Link
+  expires by itself (~20 days). Revocable/grantable later via 70 33 44 44.
+- Remaining: (1) Nordea Business login arrives → confirm account visible;
+  (2) verify NemKonto registration a few days later; then this route is closed.
+
+Recorded by Claude (Node 1), 2026-09-28, from emails + documents Yehor supplied.

@@ -591,3 +591,37 @@ embarrassing, it risks the customer that unblocks everything else.
    Sept 17 Aarhus event, to go in his PPT. No Monday nudge needed.
 9. Everything else is either scheduled, watch-only, or waiting on your
    word — nothing else is time-pressured this week.
+
+---
+
+## ADDENDUM 2026-09-28 (Session 4.31 open, Claude Node 1) — 0.1.17 stop-loss MISSED, recorded late
+
+- **0.1.17 stop-loss 20:00 CEST Tue 2026-09-15 passed UNSHIPPED.** The Sep 17
+  Aarhus meetup ran on `0.1.16` + the planted samples (the freeze branch of
+  the 4.31 plan). This outcome was not recorded anywhere until today — a
+  13-day silent gap, recorded now so it does not stay silent.
+- Evidence (fresh, 2026-09-28): PyPI JSON `info.version` = `0.1.16`; npm
+  registry `dist-tags.latest` = `0.1.16`; `git log` shows no commit after
+  `b3beedc` (2026-09-14); `git ls-remote origin main` = `b3beedc…` = local HEAD.
+- Consequence: fixes `d55c20a` (BOM) and `aaafaeb` (React namespace /
+  `CSSProperties`) are on `main` but UNRELEASED. Do not describe them as shipped.
+- Re-plan (Yehor, via guide, 2026-09-28): 0.1.17 has NO deadline and runs
+  NOT before 2026-09-29. D9 decided: exit 2 only when zero files were actually
+  checked after ecosystem skips (mixed project keeps 0/1). Plan only; no edits
+  until Yehor's go.
+- The "no wrangler deploy before Thursday" rule expired with the meetup.
+  Replaced by: no deploy unless a live page is missing company name + CVR.
+  Checked live 2026-09-28: fixprove.dev `/` and `/demo` footers read
+  "FixProve v/ Yehor Kaliberda · CVR 46646223 · Aarhus, Denmark"; `/privacy`
+  and `/terms` carry name + CVR + address in body. → No deploy needed.
+  yehor.ai footer reads "© 2026 Yehor Kaliberda · Aarhus, DK" — NO CVR; fix
+  pending in the yehor.ai repo (outside this mount).
+
+- **2026-09-28 update — yehor.ai CVR footer: DONE, live.** Commit `321beaa`
+  (yehor.ai repo, author yehorcallmedai-maker, one-line change to
+  `components/Footer.tsx`), local `npm run build` passed (31/31 pages) before
+  push. Live check 2026-09-28: footer on /, /about, /privacy, /contact,
+  /forecast/live reads "© 2026 FixProve v/ Yehor Kaliberda · CVR 46646223 ·
+  Aarhus, DK · Remote". Vercel production deploy therefore succeeded — the
+  2026-09-13 build failures are no longer blocking. Holt's point closed on
+  both sites; no wrangler deploy was needed.
