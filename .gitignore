@@ -89,3 +89,11 @@ web/functions-dist/
 # 2026-09-09.md) stays tracked: its own-gap language is framed as generic
 # "what's required when" guidance, not a "we are deficient" admission.
 FixProve-vFault-Legal-Diligence.pdf
+
+# Session 4.32 (2026-10-05): sales pipeline + third-party prep notes stay
+# local-only in this PUBLIC repo -- a named prospect list and a profile of a
+# named person are not public material. Customer-facing docs
+# (PILOT-ONE-PAGER.md, LOI-TEMPLATE-EN-DA-CLIENT.md) are not ignored.
+PILOT-PIPELINE-*.md
+TEGAN-SPINNER-PREP-*.md
+LOI-TEMPLATE-EN-DA.md

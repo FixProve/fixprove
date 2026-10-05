@@ -625,3 +625,108 @@ embarrassing, it risks the customer that unblocks everything else.
   Aarhus, DK · Remote". Vercel production deploy therefore succeeded — the
   2026-09-13 build failures are no longer blocking. Holt's point closed on
   both sites; no wrangler deploy was needed.
+
+
+---
+
+## ADDENDUM 2026-10-05 (Session 4.32, Claude Node 1) — post-pitch direction, D9/empty-target, first maintenance pass, pilot pipeline
+
+### Yehor's answers (2026-10-05, relayed via guide chat; recorded as his decisions)
+
+1. **Pitch outcome (2026-09-29), Yehor-reported.** Narcis's written
+   follow-up advised **private funding** and to **reach out to Tegan
+   Spinner (module 4 speaker)**. Earlier the same week: **"find one big
+   client with proven demand."** NOTE: the guide chat carried two
+   different wordings of the Narcis quote; neither has been seen in a
+   primary source (LinkedIn — no tool). Treat as paraphrase until Yehor
+   pastes the verbatim text.
+2. **Nov 12 target.** The recorded D3 threshold stays the official exit:
+   **≥3–5 installs AND ≥1 WTP signal by 2026-11-12.** Concrete form of
+   the WTP signal: one signed non-binding Letter of Interest from a
+   recognisable company. "3 paying DK customers" in the deck was pitch
+   framing. No payment is taken before the Row 4 legal review returns —
+   this is the project's own hard gate (PITFALL row 4), not a statute.
+3. **Empty target → exit 2** (message "no Python or TS/JS source files
+   found under <path>"). Same principle as D9. `--allow-empty` noted as a
+   possible future flag, not built.
+4. **Investor stance (Yehor):** talk to investors now for calibration;
+   no valuation, no terms, no equity before evidence.
+
+### New context the 4.32 prompt predated (Yehor-reported unless marked)
+
+- Business debit card received; Nordea business account live.
+- Camilo Botero (tero.legal): Yehor sent ToS + Privacy drafts + question
+  list on 2026-09-30 for a meeting Tue 2026-10-06 14:00, INCUBA
+  Katrinebjerg (**verified in Gmail**, sent 2026-09-30 20:06Z). Camilo
+  **cancelled** the meeting 2026-10-02 (**verified**: calendar
+  cancellation, no body text). Offer of an async first scan, Yehor's
+  re-send of the documents + one-page data summary, and his request for
+  it to be free: **Yehor-reported — not visible in this Gmail account**.
+- Tegan intro note + reply to Narcis sent ~2026-10-01, no replies
+  (Yehor-reported). Narcis follow-up SENT 2026-10-05 (asked for Tegan's
+  best channel) — **no further Narcis messages before 2026-10-15**.
+  Tegan: one nudge Thu 2026-10-08, only if the connection was accepted.
+  If both are quiet on 2026-10-15: record as quiet, stop chasing.
+  Nothing in this session depends on either reply.
+- **Tegan Spinner — identity check (web, 2026-10-05):** the likely
+  match is the CEO/founder of Worthmore (Copenhagen, Antler-backed,
+  pre-seed), Startup Denmark visa consultant. **No public source shows
+  him as an investor**, and none ties him to module 4. See
+  `TEGAN-SPINNER-PREP-2026-10-05.md`.
+
+### Watch list — last checked (first full pass of MAINTENANCE-PROTOCOL-browser.md)
+
+| # | Item | Source | Checked | Finding |
+|---|---|---|---|---|
+| 1 | CI | api.github.com …/actions/workflows/ci.yml/runs | 2026-10-05 ~15:00 UTC | `45def6c completed success 2026-09-28T16:32:26Z`; check-runs on 45def6c: `test-python completed success`, `build completed success` (workflow conclusion level) |
+| 2 | Release | …/workflows/release.yml/runs | 2026-10-05 | last run `v0.1.16 98930e2 success 2026-09-14T19:18:52Z`; no tag since → no raw-log check due |
+| 3 | PyPI | pypi.org/pypi/fixprove/json + integrity API | 2026-10-05 | `0.1.16`, uploaded `2026-09-14T19:20:53Z`; provenance endpoint returns an attestation bundle (trusted publishing) |
+| 4 | npm | registry.npmjs.org/fixprove (JSON, stronger than the page) | 2026-10-05 | `latest: 0.1.16`, published `2026-09-14T19:21:58Z`; `_npmUser: GitHub Actions, trustedPublisher: github (oidc)` — OIDC intact |
+| 5 | Live site | fixprove.dev /, /demo, /privacy, /terms | 2026-10-05 | `/` 200 "FixProve — prove your AI-generated code before it merges", footer "FixProve v/ Yehor Kaliberda · CVR 46646223 · Aarhus, Denmark · yehor@yehor.ai"; `/privacy` 200 "Privacy Policy — FixProve"; `/terms` 200 "Terms of Service — FixProve" (both: name + CVR + address in body); `/demo` **first fetch 404, re-fetch 200** "Live demo — FixProve", same footer, **no video section** (correct). Transient 404 noted, not escalated; re-check next pass. Minor: /demo shows the Python command without `check` and the TS one with it (both forms valid). |
+| 6 | Gmail (by name, since 2026-09-27) | Gmail tool | 2026-10-05 | Nordea: e-sign request 2026-09-28 (already handled in 4.31). AI Tinkerers: newsletter only. Augustin, IVSR, grant body, Cernel, WasteHero, Kondrup, AarhusJS: **no new messages**. |
+| 7 | LinkedIn | no tool | 2026-10-05 | Yehor-reported only — see open threads above |
+| 8 | vFault | vfault.com/pricing.html | 2026-10-05 | Free £0; Pro £9.99/mo; Team £29.99/mo; Business £49.99/mo; Enterprise "Starting at £99.99/month" — tiers unchanged vs 2026-09-09 research |
+| 9 | Companies House 15127870 | find-and-update.company-information.service.gov.uk | 2026-10-05 | "EXCEED WEB SERVICES LTD", status **Dissolved**, 3 March 2026 — unchanged |
+
+Escalations: none standing (the /demo 404 did not reproduce).
+
+### Pilot pipeline opened — see `PILOT-PIPELINE-2026-10-05.md`
+
+17 solid + 4 partial targets, each with source URLs; CLI no-network claim
+verified from source (with two disclosed caveats); LOI template EN+DA;
+pilot one-pager; Tegan prep; three Gmail DRAFTS created, none sent (Travis
+intro ask; Narcis intro ask marked HOLD until 15 Oct; Puzzel cold email).
+
+### ADDENDUM 2 — 2026-10-05 (Session 4.32, Claude Node 1) — 0.1.17 pushed, CI green; guide corrections log
+
+- **Push:** Yehor pushed `45def6c..e38becb main -> main` (Yehor-reported,
+  incl. the known branch-protection bypass line). **Verified:**
+  `git ls-remote origin main` = `e38becb191da9e9a96e36baf0ba28cc9292bd744`.
+- **CI on e38becb** (run #96, `actions/runs/37333884316`): `test-python`
+  success, `build` success. **Raw log line** (job 111843608735, step "Test
+  Python engine", line 15): `253 passed in 14.09s` — equals the local run.
+  Annotations: Node.js 20 deprecation warning + "ubuntu-latest label will
+  migrate to Ubuntu 26 beginning October 19, 2026" notice — both also on
+  `45def6c`, not new. **Ops watch:** first release after 2026-10-19 runs on
+  Ubuntu 26 — re-check CI then.
+- **Tag:** NOT tagged. Waiting on Yehor's one-word go (CA-3).
+- **Guide-chat errors (recorded as guide errors, NOT Yehor decisions):**
+  1. Tegan framed as an investor / "the investor call" — he is documented
+     as a founder who has raised, not an investor.
+  2. Two different wordings of Narcis's advice — both guide paraphrases;
+     verbatim text still pending from Yehor.
+  3. "Can't legally take payment before legal review" — it is the
+     project's own gate (PITFALL row 4), not a statute.
+- **Guide additions accepted:**
+  a. Augustin Gottlieb LinkedIn message SENT 2026-10-05 (Yehor-reported)
+     asking for a Bankdata agentic-platform intro. Pipeline row updated;
+     one follow-up max, not before 2026-10-12. Premise check: the luma page
+     for the Bankdata-venue event lists hosts Jacob Langvad Nilsson and
+     Tommy Dejbjerg Pedersen; Augustin is not on it → "Augustin organises
+     that series" is UNVERIFIED (noted in PILOT-PIPELINE).
+  b. LOI: legal glance preferred, not blocking (non-binding, no price).
+     Clean customer copy created: `LOI-TEMPLATE-EN-DA-CLIENT.md`.
+  c. **Ops watch — Yehor's C: drive** free space ~18 GB (2026-09-11) →
+     ~7.7 GB (2026-10-05) per his cleanup_log.txt (Yehor-reported via guide;
+     log not seen by the executor). Below ~5 GB, pip/npm/builds may fail
+     in confusing ways. Owner: Yehor, this week.
