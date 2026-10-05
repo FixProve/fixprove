@@ -4,6 +4,8 @@ FixProve proves your AI-generated code before it merges — deterministically
 verifying that every import, symbol, method, and API call resolves against
 your real installed dependencies, in CI, with zero LLM tokens.
 
+Requires Python 3.10+ (the engine is Python; the npm package is a wrapper around it).
+
 ```bash
 npm install -g fixprove
 fixprove check /path/to/your/project
@@ -58,7 +60,9 @@ fixprove check [path] [--requirements <file>] [--cache-dir <dir>]
 ```
 
 Exit codes: `0` clean, `1` unresolved symbol(s) found, `2` usage/setup
-error (including "Python engine not installed"), `127` no Python
+error (including "Python engine not installed", and "nothing was
+checked" — no Python or TS/JS source files under the path, or every
+detected ecosystem skipped for a missing manifest), `127` no Python
 interpreter found at all.
 
 ## Want this on every pull request, without installing anything?

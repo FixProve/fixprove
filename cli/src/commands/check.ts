@@ -130,7 +130,7 @@ export function runCheck(path: string, options: RunCheckOptions = {}): number {
 
   process.stderr.write(
     "[fixprove] could not find a Python interpreter (tried: python3, python).\n" +
-      "FixProve's engine is written in Python. Install Python 3.9+, then run:\n" +
+      "FixProve's engine is written in Python. Install Python 3.10+, then run:\n" +
       "  pip install fixprove\n"
   );
   return PYTHON_NOT_FOUND_EXIT_CODE;

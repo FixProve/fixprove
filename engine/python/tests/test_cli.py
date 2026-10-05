@@ -57,9 +57,15 @@ def test_cli_warns_and_skips_on_missing_requirements(tmp_path, capsys):
     # with no requirements.txt now warns + skips (rc=0) instead of hard-
     # failing (rc=2) -- matches the graceful-ecosystem-absence contract.
     _write(tmp_path / "app.py", "import os\n")
+    # KS-TRACE: D9 (Yehor, 2026-09-28) | contract change: the warning +
+    # skip behaviour above is kept, but when the skip leaves ZERO files
+    # checked (this pure-Python fixture) the exit code is now 2, not 0 --
+    # "nothing was checked" must never read as clean. The mixed-project
+    # case that S4.29 protected still exits 0/1: see
+    # test_cli_orphaned_py.py, unchanged.
     rc = main([str(tmp_path)])  # no requirements.txt anywhere
     stderr = capsys.readouterr().err
-    assert rc != 2, f"missing requirements.txt must not hard-fail the run (rc={rc})"
+    assert rc == 2, f"pure-Python project with nothing checked must exit 2 (rc={rc})"
     assert "warning" in stderr.lower()
     assert "requirements.txt" in stderr
 

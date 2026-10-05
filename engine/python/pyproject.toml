@@ -26,11 +26,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fixprove"
-version = "0.1.16"
+version = "0.1.17"
 description = "FixProve — deterministic AST-level verification that AI-generated code references real, installed symbols. Zero LLM tokens."
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.9"
+# KS-TRACE: SESSION-4.30-PY-FLOOR | requirement: install must not succeed on an
+# interpreter the engine cannot run on | evidence: Session 4.30 raw PyPI file
+# listings -- tree-sitter and tree-sitter-python publish zero cp39 wheels on any
+# platform (version gap, not platform gap) | test: pip metadata check at release
+requires-python = ">=3.10"
 authors = [{ name = "Yehor Kaliberda" }]
 keywords = ["ai", "hallucination", "static-analysis", "ci", "linter"]
 classifiers = [
@@ -39,7 +43,6 @@ classifiers = [
   "Intended Audience :: Developers",
   "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",

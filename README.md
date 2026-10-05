@@ -18,6 +18,8 @@ than guesses — so it doesn't cry wolf.
 
 ## Install
 
+Requires Python 3.10+ (the engine is Python; the npm package is a wrapper around it).
+
 ```bash
 pip install fixprove
 npm install -g fixprove

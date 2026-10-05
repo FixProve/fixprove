@@ -196,6 +196,7 @@ def main(argv=None) -> int:
     build_elapsed = 0.0
     check_elapsed = 0.0
     findings = []
+    skipped = False  # set when an ecosystem is skipped for a missing manifest (D9)
 
     # KS-TRACE: S1.4-CLI-TIMING-DEFECT | fix (found during final delivery
     # performance verification): the original dual-ecosystem refactor
@@ -240,6 +241,7 @@ def main(argv=None) -> int:
                 file=sys.stderr,
             )
             py_files = []
+            skipped = True
     if py_files:
         req_path = _resolve_requirements_path(target, args.requirements)
         build_start = time.monotonic()
@@ -264,6 +266,7 @@ def main(argv=None) -> int:
                 file=sys.stderr,
             )
             ts_files = []
+            skipped = True
     if ts_files:
         pkg_json_path = _resolve_package_json_path(target, args.package_json)
         build_start = time.monotonic()
@@ -310,6 +313,26 @@ def main(argv=None) -> int:
             print(f"\n{len(findings)} unresolved symbol(s) found.")
         else:
             print("No unresolved symbols found.")
+
+    # KS-TRACE: D9 + EMPTY-TARGET | decision: Yehor, D9 2026-09-28 (exit 2
+    # only when zero files were checked after ecosystem skips; a mixed
+    # project keeps 0/1, preserving S4.29-SELFTEST-ORPHANED-PY) and
+    # 2026-10-05 (an empty target -- no source files, nothing skipped --
+    # is ALSO exit 2: a clean result on zero checked files is a false
+    # clean, and an empty target is almost always a mistyped path). The
+    # report above is still printed first, so --json consumers (e.g. the
+    # GitHub App workflow, which runs with `|| true` and parses stdout)
+    # always get a parseable body. A future --allow-empty flag is noted,
+    # not built. | assumption: files_checked counts only files actually
+    # resolved, after skips | test: test_cli_nothing_checked.py
+    if report["files_checked"] == 0:
+        if skipped:
+            print("error: every detected ecosystem was skipped -- nothing was "
+                  "checked. See warning(s) above.", file=sys.stderr)
+        else:
+            print(f"error: no Python or TS/JS source files found under "
+                  f"{target} -- nothing was checked.", file=sys.stderr)
+        return 2
 
     return 1 if findings else 0
 

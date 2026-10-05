@@ -6,6 +6,8 @@ your *real, installed* dependencies. No LLM calls, no false-positive-prone
 heuristics: an AST-level resolver checks a reference set against a
 knowledge base built from what's actually on disk.
 
+Requires Python 3.10+ (the engine is Python; the npm package is a wrapper around it).
+
 ```bash
 pip install fixprove
 fixprove /path/to/your/project
@@ -18,7 +20,10 @@ to follow the site's install block. See KS-TRACE
 `PRIORITY-TRACKER-2026-09-11-P0-CLI-SYNTAX` in `cli.py` for why.
 
 Exit codes: `0` clean, `1` unresolved symbol(s) found, `2` usage/setup
-error — designed to drop straight into a CI gate.
+error — including "nothing was checked" (no Python or TS/JS source files
+under the path, or every detected ecosystem was skipped for a missing
+manifest), so an empty or mistyped path can never pass as clean. Designed
+to drop straight into a CI gate.
 
 This is the same engine that powers the [FixProve GitHub App](https://fixprove.dev/app),
 which posts this check as a blocking status directly on your pull requests.
@@ -36,9 +41,12 @@ deterministic core locally or in your own pipeline.
   installed packages' real public API.
 - TypeScript/JavaScript: imports/re-exports/call targets/attribute chains,
   checked against installed npm packages' `.d.ts` declarations.
-- Known limitation: packages using TypeScript module augmentation (e.g.
+- Known limitation: symbols added by TypeScript module augmentation
+  (`declare module "x" { ... }` blocks that extend another package, e.g.
   `@types/lodash`) are safely skipped (never flagged, but also not fully
-  checked) rather than guessed at — see the engine's own Keystone Reports
+  checked) rather than guessed at. This is separate from members declared
+  inside a `declare namespace` block (e.g. React's `CSSProperties`), which
+  are resolved normally as of 0.1.17 — see the engine's own Keystone Reports
   (`KS-REPORT-1.4-ts-resolver.md` in the source repository) for the full
   accuracy/limitation writeup.
 - Known limitation: a package that re-exports symbols from a separate npm
@@ -49,6 +57,14 @@ deterministic core locally or in your own pipeline.
   2026-09-12 customer self-test against
   github.com/dyonng/one-pace-plex-automator (58 false positives, root
   cause confirmed by reading vitest's own `.d.ts`).
+- Known limitation (Python): `from pkg.sub.module import Name` can be
+  false-flagged as unresolved when `Name` is defined in a submodule but is
+  not also re-exported at the top level of `pkg` (seen with
+  `cryptography`, `opentelemetry`, `typer.testing`,
+  `fastapi.testclient`). The resolver currently checks the name against
+  the top-level package rather than the submodule the import names. Found
+  via independent field verification, 2026-09-14; a real fix is planned
+  as its own change, not in 0.1.17.
 
 ## License
 
